@@ -94,7 +94,7 @@ NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, E2B_API_KEY
 
 ### Goal: Create, use, and destroy sandboxed VMs for code fixing
 
-- [ ] Create `src/lib/e2b/sandbox.ts`:
+- [x] Create `src/lib/e2b/sandbox.ts`:
   ```typescript
   import { Sandbox } from '@e2b/code-interpreter';
 
@@ -110,7 +110,7 @@ NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, E2B_API_KEY
   }
   ```
 
-- [ ] Create `src/lib/e2b/runner.ts`:
+- [x] Create `src/lib/e2b/runner.ts`:
   ```typescript
   export async function runInSandbox(sandbox: Sandbox, command: string): Promise<{ stdout: string; stderr: string; exitCode: number }>
   export async function runLint(sandbox: Sandbox, changedFiles: string[]): Promise<LintResult>
@@ -128,7 +128,7 @@ NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, E2B_API_KEY
 
 ### Goal: API route that Person D's UI calls when user clicks "Auto-Fix"
 
-- [ ] Create `src/app/api/projects/[id]/fix/[findingId]/route.ts`:
+- [x] Create `src/app/api/projects/[id]/fix/[findingId]/route.ts`:
   - `POST` handler:
     1. Authenticate user via `requireAuth()`
     2. Fetch the finding from DB, verify it belongs to user's project

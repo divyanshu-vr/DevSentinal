@@ -56,9 +56,9 @@ Two pairs work simultaneously. Within each pair, work is loosely coupled.
 |---|------|-------|-----------|--------|
 | 2B.1 | GitHub client + repo.ts (fetchRepoTree, fetchFileContent, detectTechStack) | B | 1.1 | `[x]` B — client.ts + repo.ts with all 3 functions done |
 | 2B.2 | GitHub API routes (repo-tree, file-content) | B | 2B.1, 1.2 | `[x]` B — repo-tree + file-content API routes done |
-| 2B.3 | E2B sandbox library (sandbox.ts, runner.ts) | B | 1.1 | `[ ]` |
+| 2B.3 | E2B sandbox library (sandbox.ts, runner.ts) | B | 1.1 | `[x]` B — sandbox.ts (createSandbox, destroySandbox) + runner.ts (runInSandbox, runLint, runTests, readFile, writeFile) done |
 | 2B.4 | GitHub PR library (pr.ts — createBranch, commitFiles, openPR) | B | 2B.1 | `[x]` B — pr.ts with createBranch, commitFiles, openPR done |
-| 2B.5 | Fix trigger API route (`POST /api/projects/[id]/fix/[findingId]`) | B | 1.6, 2B.3 | `[ ]` |
+| 2B.5 | Fix trigger API route (`POST /api/projects/[id]/fix/[findingId]`) | B | 1.6, 2B.3 | `[x]` B — POST handler with auth, finding verification, fix_jobs creation, Inngest event (stubbed), TriggerFixResponse done |
 | 2D.1 | Landing page (`/`) | D | 1.1 | `[ ]` |
 | 2D.2 | Layout + header + sidebar components | D | 1.1 | `[ ]` |
 | 2D.3 | Dashboard page (`/dashboard`) + project-card component | D | 1.2 | `[ ]` |
