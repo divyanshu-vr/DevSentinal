@@ -51,8 +51,8 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
 
 ### Goal: TypeScript types and database client ready for all devs
 
-- [ ] Create `src/types/index.ts` — copy exact types from `shared/rules.md` Section 6
-- [ ] Create `src/lib/supabase/client.ts`:
+- [x] Create `src/types/index.ts` — copy exact types from `shared/rules.md` Section 6
+- [x] Create `src/lib/supabase/client.ts`:
   ```typescript
   import { createBrowserClient as _createBrowserClient } from '@supabase/ssr';
   // OR simpler approach:
@@ -65,7 +65,7 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
     );
   }
   ```
-- [ ] Create `src/lib/supabase/server.ts`:
+- [x] Create `src/lib/supabase/server.ts`:
   ```typescript
   import { createClient } from '@supabase/supabase-js';
 

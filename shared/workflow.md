@@ -16,10 +16,10 @@
 | 1.2 | Create `requireAuth()` middleware + Auth0 config | D | 1.1 | `[ ]` |
 | 1.3 | Auth0 login/callback/logout pages working | D | 1.2 | `[ ]` |
 | 1.4 | Deploy blank app to Vercel | D | 1.1 | `[ ]` |
-| 1.5 | Create `src/types/index.ts` (all shared types) | A | 1.1 | `[ ]` |
-| 1.6 | Create Supabase client (`server.ts` + `client.ts`) | A | 1.1 | `[ ]` |
+| 1.5 | Create `src/types/index.ts` (all shared types) | A | 1.1 | `[x]` A — all shared types from rules.md Section 6 |
+| 1.6 | Create Supabase client (`server.ts` + `client.ts`) | A | 1.1 | `[x]` A — browser + server clients created |
 | 1.7 | Run DB migrations (tables 1-6) in Supabase | A | Nothing (can use Supabase dashboard) | `[x]` A — migrations run + verified |
-| 1.8 | Run DB migration (table 7: fix_jobs) in Supabase | B | Nothing (can use Supabase dashboard) | `[ ]` |
+| 1.8 | Run DB migration (table 7: fix_jobs) in Supabase | B | Nothing (can use Supabase dashboard) | `[x]` B — migration run + verified |
 
 **Block 1 Gate:** Everyone pulls from `main` after D pushes scaffold (1.1). A's types (1.5) and Supabase client (1.6) must be merged before Block 2 starts.
 

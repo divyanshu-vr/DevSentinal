@@ -29,9 +29,9 @@ NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, E2B_API_KEY
 
 ### Goal: Create the fix_jobs table in Supabase
 
-- [ ] Create `supabase/migrations/007_create_fix_jobs.sql` — exact SQL from `shared/rules.md` Section 5
-- [ ] Run migration against Supabase project
-- [ ] Verify table exists with correct columns and RLS policy
+- [x] Create `supabase/migrations/007_create_fix_jobs.sql` — exact SQL from `shared/rules.md` Section 5
+- [x] Run migration against Supabase project
+- [x] Verify table exists with correct columns and RLS policy
 
 ---
 
