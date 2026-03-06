@@ -37,10 +37,10 @@ Two pairs work simultaneously. Within each pair, work is loosely coupled.
 | 2A.2 | Upload API route (`POST /api/upload`) | A | 2A.1 | `[x]` A — POST handler with parsing, Gemini extraction, DB storage |
 | 2A.3 | Gemini prompts (analyze-codebase.ts, generate-tests.ts) | A | 1.5 | `[x]` A — Pass 1 (codebase understanding) + Pass 2 (requirement analysis) + test generation prompts done |
 | 2A.4 | Gemini client (`gemini.ts`) with extraction + analysis functions | A | 2A.3 | `[x]` A — extractRequirements, understandCodebase, generateTestCases, analyzeCodebase + prioritizeFiles (max 50 key files) done |
-| 2A.5 | Inngest client (`client.ts`) | A | 1.1 | `[ ]` |
-| 2A.6 | Inngest analysis job (`analyze.ts`) — full pipeline | A | 2A.4, 2A.5, 2B.1* | `[ ]` |
-| 2A.7 | Project API routes (`GET/POST /api/projects`, `GET /findings`) | A | 1.5, 1.6 | `[ ]` |
-| 2A.8 | Inngest serve endpoint (`/api/inngest/route.ts`) | A | 2A.5 | `[ ]` |
+| 2A.5 | Inngest client (`client.ts`) | A | 1.1 | `[x]` A — inngest client with id 'devsentinel' done |
+| 2A.6 | Inngest analysis job (`analyze.ts`) — full pipeline | A | 2A.4, 2A.5, 2B.1* | `[x]` A — 5-step pipeline (parse PRD, understand codebase, generate tests, run tests, complete) with error handling done |
+| 2A.7 | Project API routes (`GET/POST /api/projects`, `GET /findings`) | A | 1.5, 1.6 | `[x]` A — GET/POST /api/projects + GET /api/projects/[id]/findings done |
+| 2A.8 | Inngest serve endpoint (`/api/inngest/route.ts`) | A | 2A.5 | `[x]` A — serve endpoint registering analysis.run (fix.run placeholder for Person C) done |
 | 2C.1 | Claude client + 4 tool definitions (`claude.ts`) | C | 1.1 | `[ ]` |
 | 2C.2 | Fix agent prompt (`fix-code.ts`) | C | 1.5 | `[ ]` |
 | 2C.3 | SSE emitter helper (`emitter.ts`) | C | 1.1 | `[ ]` |

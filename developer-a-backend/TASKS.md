@@ -144,12 +144,12 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
 
 ### Goal: Async analysis pipeline triggered by API, streams progress via DB status updates
 
-- [ ] Create `src/lib/inngest/client.ts`:
+- [x] Create `src/lib/inngest/client.ts`:
   ```typescript
   import { Inngest } from 'inngest';
   export const inngest = new Inngest({ id: 'devsentinel' });
   ```
-- [ ] Create `src/lib/inngest/analyze.ts`:
+- [x] Create `src/lib/inngest/analyze.ts`:
   Inngest function `analysis.run`, triggered by event `analysis.trigger`:
   - **Step 1 — Parse PRD** (status: `parsing_prd`):
     - Read document + requirements from DB
@@ -172,9 +172,9 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
     - Update `projects.health_score` and `projects.status` to `analyzed`
     - Update status to `complete`
   - **Error handling**: Any step failure -> status = `error`, store error_message
-- [ ] Create `src/app/api/projects/[id]/analyze/route.ts`:
+- [x] Create `src/app/api/projects/[id]/analyze/route.ts`:
   - `POST`: Create `analysis_runs` row, trigger Inngest event `analysis.trigger`, return `TriggerAnalysisResponse`
-- [ ] Create `src/app/api/inngest/route.ts`:
+- [x] Create `src/app/api/inngest/route.ts`:
   - Inngest serve endpoint that registers both `analysis.run` and Person C's `fix.run`
 
 ### Key Design Decisions:
@@ -189,10 +189,10 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
 
 ### Goal: CRUD routes for projects and findings
 
-- [ ] Create `src/app/api/projects/route.ts`:
+- [x] Create `src/app/api/projects/route.ts`:
   - `GET`: List all projects for authenticated user. Return `ListProjectsResponse`.
   - `POST`: Accept `CreateProjectRequest`, parse repo URL to extract owner/name, call Person B's `fetchRepoTree()` and `detectTechStack()`, create project in DB, return `CreateProjectResponse`.
-- [ ] Create `src/app/api/projects/[id]/findings/route.ts`:
+- [x] Create `src/app/api/projects/[id]/findings/route.ts`:
   - `GET`: Accept query param `?run_id=uuid` (or `latest`). Fetch analysis run + all findings. Return `FindingsResponse`.
 
 ---

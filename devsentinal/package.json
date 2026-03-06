@@ -20,6 +20,7 @@
     "axios": "^1.13.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "inngest": "^3.52.6",
     "lucide-react": "^0.577.0",
     "mammoth": "^1.11.0",
     "marked": "^17.0.4",
