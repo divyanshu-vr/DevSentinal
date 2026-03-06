@@ -2,6 +2,8 @@
 
 > **EVERY developer MUST read this file before writing any code.**
 > This is the single source of truth for architecture, types, schema, naming, and conventions.
+>
+> **ALSO READ:** `shared/workflow.md` — the execution order, dependency graph, and progress tracker.
 
 ---
 
@@ -840,26 +842,7 @@ export async function requireAuth(req: NextRequest): Promise<User | null>
 6. **Types are the contract** — if you need a new field, update `src/types/index.ts` and notify the team.
 7. **SSE for progress** — analysis and fix progress are streamed via SSE, never polled by the frontend.
 8. **One owner per file** — check the source tree above before creating any file.
-
-🚫  These constraints are absolute — the AI must never violate them
-1. NO GIT CLONE on the server. ALL repository access goes through lib/github.ts using the GitHub REST API.
-   Violation: any import of 'simple-git', 'isomorphic-git', or shell commands running 'git clone' outside E2B.
-
-2. NO CODE EXECUTION outside E2B. lib/fix-agent.ts runs code ONLY by calling lib/sandbox.ts.
-   Violation: any call to exec(), spawn(), or child_process outside sandbox.ts.
-
-3. NO DIRECT MERGE. The fix agent opens a Pull Request only. It never calls octokit.pulls.merge().
-   Violation: any call to octokit.pulls.merge or equivalent.
-
-4. NO HARDCODED VALUES. Every API key, model name, URL, and timeout comes from lib/config.ts.
-   Violation: any string literal matching an API key pattern or model name outside config.ts.
-
-5. NO BLOCKING THE UI. Analysis and fix pipelines run as Inngest background jobs.
-   Violation: any API route that awaits the full analysis or fix before returning a response.
-
-6. NO MORE THAN 4 AGENT TOOLS. Claude is given exactly read_file, write_file, run_bash, search_codebase.
-   Violation: any additional tool definition in AGENT_TOOLS array.
-
-7. RLS ON EVERY TABLE. No Supabase query bypasses Row-Level Security on the client side.
-   Violation: any use of the service role key in client components or public API routes.
-
+9. **Track progress** — after completing any task, update the Progress Tracker in `shared/workflow.md`. Change `[ ]` to `[x]`, commit, and push. This is how the team knows what's done.
+10. **Follow the execution order** — `shared/workflow.md` defines exactly when each person starts, what they deliver first, and what depends on what. Do NOT skip ahead or work out of order.
+11. **Use stubs when blocked** — if your dependency isn't ready, use a stub that matches the exact type signatures from Section 10 above. See `shared/workflow.md` Stub Strategy for details.
+12. **Communicate at checkpoints** — notify the team at the communication checkpoints listed in `shared/workflow.md`. Don't go silent for hours.
