@@ -384,3 +384,228 @@ ${requirementsStr}`;
 
   return findings;
 }
+
+// ============================================================
+// runAgentLoop — AI Fix Agent with tool calling
+// ============================================================
+
+import type { AgentContext, AgentLogEntry } from '@/types';
+import { buildFixPrompt } from '@/lib/ai/prompts/fix-code';
+
+/**
+ * Sandbox interface — provided by another developer
+ * These functions interact with the sandboxed repository
+ */
+interface Sandbox {
+  readFile: (path: string) => Promise<string>;
+  writeFile: (path: string, content: string) => Promise<void>;
+  runCommand: (command: string) => Promise<string>;
+}
+
+/**
+ * Tool definitions for Gemini function calling
+ */
+const AGENT_TOOLS = [
+  {
+    name: 'read_file',
+    description: 'Read a file from the repository by path',
+    parameters: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'File path relative to repo root',
+        },
+      },
+      required: ['path'],
+    },
+  },
+  {
+    name: 'write_file',
+    description: 'Write content to a file (overwrites existing content)',
+    parameters: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'File path relative to repo root',
+        },
+        content: {
+          type: 'string',
+          description: 'New file content',
+        },
+      },
+      required: ['path', 'content'],
+    },
+  },
+  {
+    name: 'run_bash',
+    description: 'Execute a bash command in the repository root',
+    parameters: {
+      type: 'object',
+      properties: {
+        command: {
+          type: 'string',
+          description: 'Bash command to execute',
+        },
+      },
+      required: ['command'],
+    },
+  },
+  {
+    name: 'search_codebase',
+    description: 'Search for patterns in the codebase using grep',
+    parameters: {
+      type: 'object',
+      properties: {
+        pattern: {
+          type: 'string',
+          description: 'Search pattern (regex)',
+        },
+        path: {
+          type: 'string',
+          description: 'Optional path to search in (defaults to entire repo)',
+        },
+      },
+      required: ['pattern'],
+    },
+  },
+];
+
+/**
+ * Execute a single tool call
+ */
+async function executeTool(
+  toolName: string,
+  toolInput: Record<string, unknown>,
+  sandbox: Sandbox
+): Promise<string> {
+  const startTime = Date.now();
+
+  try {
+    switch (toolName) {
+      case 'read_file': {
+        const path = toolInput.path as string;
+        const content = await sandbox.readFile(path);
+        return content;
+      }
+
+      case 'write_file': {
+        const path = toolInput.path as string;
+        const content = toolInput.content as string;
+        await sandbox.writeFile(path, content);
+        return `Successfully wrote to ${path}`;
+      }
+
+      case 'run_bash': {
+        const command = toolInput.command as string;
+        const output = await sandbox.runCommand(command);
+        return output;
+      }
+
+      case 'search_codebase': {
+        const pattern = toolInput.pattern as string;
+        const path = toolInput.path as string | undefined;
+        const grepCommand = `grep -rn "${pattern}" ${path || '.'}`;
+        const output = await sandbox.runCommand(grepCommand);
+        return output;
+      }
+
+      default:
+        return `Error: Unknown tool ${toolName}`;
+    }
+  } catch (error) {
+    return `Error executing ${toolName}: ${error instanceof Error ? error.message : String(error)}`;
+  }
+}
+
+/**
+ * Main agent loop — runs Gemini with tool calling until completion
+ */
+export async function runAgentLoop(
+  context: AgentContext,
+  sandbox: Sandbox
+): Promise<{
+  files_changed: string[];
+  agent_log: AgentLogEntry[];
+}> {
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-1.5-pro',
+    tools: [{ functionDeclarations: AGENT_TOOLS }],
+  });
+
+  const systemPrompt = buildFixPrompt(context);
+  const chat = model.startChat({
+    history: [
+      {
+        role: 'user',
+        parts: [{ text: systemPrompt }],
+      },
+      {
+        role: 'model',
+        parts: [{ text: 'Understood. I will fix the bug following the workflow. Let me start by reading the broken file.' }],
+      },
+    ],
+  });
+
+  const filesChanged = new Set<string>();
+  const agentLog: AgentLogEntry[] = [];
+  const MAX_ITERATIONS = 15;
+
+  let iteration = 0;
+  let lastMessage = 'Begin fixing the bug.';
+
+  while (iteration < MAX_ITERATIONS) {
+    iteration++;
+
+    const result = await chat.sendMessage(lastMessage);
+    const response = result.response;
+
+    // Check if Gemini wants to call a function
+    const functionCalls = response.functionCalls();
+
+    if (!functionCalls || functionCalls.length === 0) {
+      // No more tool calls — agent is done
+      break;
+    }
+
+    // Execute all function calls
+    const functionResponses = await Promise.all(
+      functionCalls.map(async (call: any) => {
+        const toolName = call.name;
+        const toolInput = call.args as Record<string, unknown>;
+        const startTime = Date.now();
+
+        const output = await executeTool(toolName, toolInput, sandbox);
+        const duration = Date.now() - startTime;
+
+        // Track files changed
+        if (toolName === 'write_file' && toolInput.path) {
+          filesChanged.add(toolInput.path as string);
+        }
+
+        // Log the tool execution
+        agentLog.push({
+          timestamp: new Date().toISOString(),
+          tool: toolName as AgentLogEntry['tool'],
+          input: toolInput,
+          output,
+          duration_ms: duration,
+        });
+
+        return {
+          name: call.name,
+          response: { output },
+        };
+      })
+    );
+
+    // Send function results back to Gemini
+    lastMessage = JSON.stringify(functionResponses);
+  }
+
+  return {
+    files_changed: Array.from(filesChanged),
+    agent_log: agentLog,
+  };
+}
