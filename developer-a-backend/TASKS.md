@@ -36,14 +36,14 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
 
 ### Goal: All 6 tables created in Supabase with RLS policies
 
-- [ ] Create `supabase/migrations/001_create_users.sql` — exact SQL from `shared/rules.md` Section 5
-- [ ] Create `supabase/migrations/002_create_projects.sql`
-- [ ] Create `supabase/migrations/003_create_documents.sql`
-- [ ] Create `supabase/migrations/004_create_requirements.sql`
-- [ ] Create `supabase/migrations/005_create_analysis_runs.sql`
-- [ ] Create `supabase/migrations/006_create_findings.sql`
-- [ ] Run migrations against Supabase project
-- [ ] Verify all tables exist with correct columns and RLS policies
+- [x] Create `supabase/migrations/001_create_users.sql` — exact SQL from `shared/rules.md` Section 5
+- [x] Create `supabase/migrations/002_create_projects.sql`
+- [x] Create `supabase/migrations/003_create_documents.sql`
+- [x] Create `supabase/migrations/004_create_requirements.sql`
+- [x] Create `supabase/migrations/005_create_analysis_runs.sql`
+- [x] Create `supabase/migrations/006_create_findings.sql`
+- [x] Run migrations against Supabase project
+- [x] Verify all tables exist with correct columns and RLS policies
 
 ---
 

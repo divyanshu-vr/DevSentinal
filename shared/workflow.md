@@ -18,7 +18,7 @@
 | 1.4 | Deploy blank app to Vercel | D | 1.1 | `[ ]` |
 | 1.5 | Create `src/types/index.ts` (all shared types) | A | 1.1 | `[ ]` |
 | 1.6 | Create Supabase client (`server.ts` + `client.ts`) | A | 1.1 | `[ ]` |
-| 1.7 | Run DB migrations (tables 1-6) in Supabase | A | Nothing (can use Supabase dashboard) | `[ ]` |
+| 1.7 | Run DB migrations (tables 1-6) in Supabase | A | Nothing (can use Supabase dashboard) | `[x]` A — migrations run + verified |
 | 1.8 | Run DB migration (table 7: fix_jobs) in Supabase | B | Nothing (can use Supabase dashboard) | `[ ]` |
 
 **Block 1 Gate:** Everyone pulls from `main` after D pushes scaffold (1.1). A's types (1.5) and Supabase client (1.6) must be merged before Block 2 starts.
