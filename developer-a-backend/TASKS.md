@@ -83,22 +83,22 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
 
 ### Goal: Parse uploaded PDF, DOCX, and MD files into plain text
 
-- [ ] Create `src/lib/parsers/pdf.ts`:
+- [x] Create `src/lib/parsers/pdf.ts`:
   ```typescript
-  import pdfParse from 'pdf-parse';
+  import { PDFParse } from 'pdf-parse';
   export async function parsePDF(buffer: Buffer): Promise<string>
   ```
-- [ ] Create `src/lib/parsers/docx.ts`:
+- [x] Create `src/lib/parsers/docx.ts`:
   ```typescript
   import mammoth from 'mammoth';
   export async function parseDOCX(buffer: Buffer): Promise<string>
   ```
-- [ ] Create `src/lib/parsers/markdown.ts`:
+- [x] Create `src/lib/parsers/markdown.ts`:
   ```typescript
   import { marked } from 'marked';
   export async function parseMarkdown(text: string): Promise<string>
   ```
-- [ ] Each parser returns clean plain text (no HTML tags, no binary artifacts)
+- [x] Each parser returns clean plain text (no HTML tags, no binary artifacts)
 
 ---
 
@@ -106,14 +106,14 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
 
 ### Goal: Accept PRD file upload, parse it, extract requirements via Gemini
 
-- [ ] Create `src/app/api/upload/route.ts`:
-  - `POST` handler accepts `FormData` with fields `file` (File) and `project_id` (string)
-  - Detect file type from extension (.pdf, .md, .docx)
-  - Parse file content using the appropriate parser from Task 3
-  - Store document record in `documents` table with `parsed_content`
-  - Call Gemini to extract structured requirements from parsed text (see Task 5 prompt)
-  - Store each extracted requirement in `requirements` table
-  - Return `UploadResponse` shape: `{ document, requirements }`
+- [x] Create `src/app/api/upload/route.ts`:
+  - [x] `POST` handler accepts `FormData` with fields `file` (File) and `project_id` (string)
+  - [x] Detect file type from extension (.pdf, .md, .docx)
+  - [x] Parse file content using the appropriate parser from Task 3
+  - [x] Store document record in `documents` table with `parsed_content`
+  - [x] Call Gemini to extract structured requirements from parsed text (see Task 5 prompt)
+  - [x] Store each extracted requirement in `requirements` table
+  - [x] Return `UploadResponse` shape: `{ document, requirements }`
 
 ---
 
@@ -121,7 +121,7 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
 
 ### Goal: Gemini parses PRD text and returns structured requirements
 
-- [ ] Create `src/lib/ai/gemini.ts`:
+- [x] Create `src/lib/ai/gemini.ts`:
   ```typescript
   import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -130,13 +130,13 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
   export async function extractRequirements(prdText: string): Promise<ExtractedRequirement[]>
   export async function analyzeCodebase(fileTree: RepoTreeNode[], fileContents: Record<string, string>, requirements: Requirement[]): Promise<Finding[]>
   ```
-- [ ] Create `src/lib/ai/prompts/analyze-codebase.ts`:
+- [x] Create `src/lib/ai/prompts/analyze-codebase.ts`:
   - System prompt for Gemini Pass 1: "You are a senior engineer. Given this file tree and key source files, identify the framework, all API routes, frontend pages, auth middleware, and database models. Return a JSON structure."
   - System prompt for Gemini Pass 2: "Given the codebase analysis and these PRD requirements, for each requirement determine if the code satisfies it. Return a JSON array of findings with pass/fail, file_path, line numbers, code snippet, and explanation."
-- [ ] Create `src/lib/ai/prompts/generate-tests.ts`:
+- [x] Create `src/lib/ai/prompts/generate-tests.ts`:
   - Prompt that takes requirements and generates test cases with types: happy_path, error_case, auth_guard, validation, edge_case
-- [ ] Use Gemini's JSON mode (`generationConfig: { responseMimeType: "application/json" }`) for structured output
-- [ ] Handle large repos: prioritize files matching routes found in PRD requirements (max ~50 key files)
+- [x] Use Gemini's JSON mode (`generationConfig: { responseMimeType: "application/json" }`) for structured output
+- [x] Handle large repos: prioritize files matching routes found in PRD requirements (max ~50 key files)
 
 ---
 

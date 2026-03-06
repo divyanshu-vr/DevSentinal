@@ -33,10 +33,10 @@ Two pairs work simultaneously. Within each pair, work is loosely coupled.
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|-----------|--------|
-| 2A.1 | PRD parsers (pdf.ts, docx.ts, markdown.ts) | A | 1.5, 1.6 | `[ ]` |
-| 2A.2 | Upload API route (`POST /api/upload`) | A | 2A.1 | `[ ]` |
-| 2A.3 | Gemini prompts (analyze-codebase.ts, generate-tests.ts) | A | 1.5 | `[ ]` |
-| 2A.4 | Gemini client (`gemini.ts`) with extraction + analysis functions | A | 2A.3 | `[ ]` |
+| 2A.1 | PRD parsers (pdf.ts, docx.ts, markdown.ts) | A | 1.5, 1.6 | `[x]` A — pdf (pdf-parse v2), docx (mammoth), markdown (marked) done |
+| 2A.2 | Upload API route (`POST /api/upload`) | A | 2A.1 | `[x]` A — POST handler with parsing, Gemini extraction, DB storage |
+| 2A.3 | Gemini prompts (analyze-codebase.ts, generate-tests.ts) | A | 1.5 | `[x]` A — Pass 1 (codebase understanding) + Pass 2 (requirement analysis) + test generation prompts done |
+| 2A.4 | Gemini client (`gemini.ts`) with extraction + analysis functions | A | 2A.3 | `[x]` A — extractRequirements, understandCodebase, generateTestCases, analyzeCodebase + prioritizeFiles (max 50 key files) done |
 | 2A.5 | Inngest client (`client.ts`) | A | 1.1 | `[ ]` |
 | 2A.6 | Inngest analysis job (`analyze.ts`) — full pipeline | A | 2A.4, 2A.5, 2B.1* | `[ ]` |
 | 2A.7 | Project API routes (`GET/POST /api/projects`, `GET /findings`) | A | 1.5, 1.6 | `[ ]` |
