@@ -39,7 +39,7 @@ NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, E2B_API_KEY
 
 ### Goal: Reusable GitHub API functions that A and C can call
 
-- [ ] Create `src/lib/github/client.ts`:
+- [x] Create `src/lib/github/client.ts`:
   ```typescript
   import { Octokit } from 'octokit';
 
@@ -48,7 +48,7 @@ NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, E2B_API_KEY
   }
   ```
 
-- [ ] Create `src/lib/github/repo.ts`:
+- [x] Create `src/lib/github/repo.ts`:
   - `fetchRepoTree(octokit, owner, repo, branch)` -> `RepoTreeNode[]`
     - Uses: `GET /repos/{owner}/{repo}/git/trees/{branch}?recursive=1`
     - Maps response to `RepoTreeNode[]` type
@@ -59,7 +59,7 @@ NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, E2B_API_KEY
     - Checks for: `package.json` (Node.js), `requirements.txt` (Python), `go.mod` (Go), `Cargo.toml` (Rust), `pom.xml` (Java), etc.
     - Returns array of detected technologies
 
-- [ ] Create `src/lib/github/pr.ts`:
+- [x] Create `src/lib/github/pr.ts`:
   - `createBranch(octokit, owner, repo, baseBranch, newBranch)` -> `void`
     - Gets base branch SHA via `GET /repos/{owner}/{repo}/git/ref/heads/{baseBranch}`
     - Creates new ref via `POST /repos/{owner}/{repo}/git/refs`
@@ -77,13 +77,13 @@ NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, E2B_API_KEY
 
 ### Goal: API routes that the frontend can call to preview repo data
 
-- [ ] Create `src/app/api/github/repo-tree/route.ts`:
+- [x] Create `src/app/api/github/repo-tree/route.ts`:
   - `GET` with query params `owner`, `repo`, `branch`
   - Gets user's GitHub token from session (via Person D's `requireAuth()`)
   - Calls `fetchRepoTree()`, returns `{ tree: RepoTreeNode[] }`
   - Validate query params, return 400 if missing
 
-- [ ] Create `src/app/api/github/file-content/route.ts`:
+- [x] Create `src/app/api/github/file-content/route.ts`:
   - `GET` with query params `owner`, `repo`, `path`, `branch`
   - Gets user's GitHub token from session
   - Calls `fetchFileContent()`, returns `{ content: string }`
