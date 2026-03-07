@@ -170,7 +170,12 @@ export default function Home() {
           <a href="#" className="nav-link clickable">
             GitHub
           </a>
-          <a href="#" className="btn btn-outline clickable">
+                  {/* ✅ NEW: Dashboard link */}
+          <a href="/dashboard" className="nav-link clickable">
+            Dashboard
+          </a>
+          {/* ✅ UPDATED: Get Started now navigates to /api/auth/login */}
+          <a href="/api/auth/login" className="btn btn-outline clickable">
             Get Started
           </a>
         </div>
