@@ -1,13 +1,13 @@
-import { Sandbox } from '@e2b/code-interpreter';
+import { VultrSandbox } from '@/lib/vultr/sandbox';
 
 /**
- * Create an E2B sandbox instance, clone the repo, and install dependencies.
+ * Create a Vultr sandbox instance, clone the repo, and install dependencies.
  */
 export async function createSandbox(
   repoUrl: string,
   branch: string
-): Promise<{ sandboxId: string; sandbox: Sandbox }> {
-  const sandbox = await Sandbox.create({ timeoutMs: 300_000 });
+): Promise<{ sandboxId: string; sandbox: VultrSandbox }> {
+  const sandbox = await VultrSandbox.create({ timeoutMs: 300_000 });
 
   try {
     // Clone the repo inside the sandbox
@@ -69,9 +69,9 @@ export async function createSandbox(
 }
 
 /**
- * Kill and clean up an E2B sandbox.
+ * Kill and clean up a Vultr sandbox.
  */
 export async function destroySandbox(sandboxId: string): Promise<void> {
-  const sandbox = await Sandbox.connect(sandboxId);
+  const sandbox = await VultrSandbox.connect(sandboxId);
   await sandbox.kill();
 }

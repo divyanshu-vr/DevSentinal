@@ -1,4 +1,4 @@
-import { Sandbox } from '@e2b/code-interpreter';
+import type { VultrSandbox } from '@/lib/vultr/sandbox';
 import type { LintResult, TestResult } from '@/types';
 
 const REPO_DIR = '/home/user/repo';
@@ -7,7 +7,7 @@ const REPO_DIR = '/home/user/repo';
  * Execute a shell command inside the sandbox.
  */
 export async function runInSandbox(
-  sandbox: Sandbox,
+  sandbox: VultrSandbox,
   command: string
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   const result = await sandbox.commands.run(command, { timeoutMs: 120_000 });
@@ -23,7 +23,7 @@ export async function runInSandbox(
  * Supports eslint (JS/TS) and ruff (Python).
  */
 export async function runLint(
-  sandbox: Sandbox,
+  sandbox: VultrSandbox,
   changedFiles: string[]
 ): Promise<LintResult> {
   if (changedFiles.length === 0) {
@@ -85,7 +85,7 @@ export async function runLint(
  * Supports npm test (JS/TS), pytest (Python), go test (Go).
  */
 export async function runTests(
-  sandbox: Sandbox,
+  sandbox: VultrSandbox,
   testCommand?: string
 ): Promise<TestResult> {
   let cmd: string;
@@ -162,7 +162,7 @@ export async function runTests(
  * Read a file inside the sandbox filesystem.
  */
 export async function readFile(
-  sandbox: Sandbox,
+  sandbox: VultrSandbox,
   path: string
 ): Promise<string> {
   return await sandbox.files.read(path);
@@ -172,7 +172,7 @@ export async function readFile(
  * Write a file inside the sandbox filesystem.
  */
 export async function writeFile(
-  sandbox: Sandbox,
+  sandbox: VultrSandbox,
   path: string,
   content: string
 ): Promise<void> {

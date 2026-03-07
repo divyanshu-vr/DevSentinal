@@ -223,7 +223,7 @@ export default function Home() {
                 </div>
                 <div className="pipeline-row">
                   <div className="row-left">
-                    <div className="row-dot"></div> 📦 E2B Sandbox
+                    <div className="row-dot"></div> 📦 Vultr Cloud
                   </div>
                   <div className="row-status"></div>
                 </div>
@@ -337,7 +337,7 @@ export default function Home() {
             <div className="step-card">
               <div className="ghost-num">02</div>
               <div className="step-header">
-                <div className="step-title">📦 E2B Sandbox</div>
+                <div className="step-title">📦 Vultr Cloud</div>
                 <div className="badge blue">[DETERMINISTIC]</div>
               </div>
               <p className="step-desc">
@@ -494,7 +494,7 @@ export default function Home() {
           >
             <div className="tech-icon">🟦</div>
             <div className="tech-info">
-              <h4>E2B Sandbox</h4>
+              <h4>Vultr Cloud</h4>
               <p>Isolated cloud VM execution</p>
             </div>
           </div>
@@ -542,7 +542,7 @@ export default function Home() {
 
         <div className="arch-flow reveal">
           Slack <span className="arch-arrow">&rarr;</span> Orchestrator{" "}
-          <span className="arch-arrow">&rarr;</span> E2B Sandbox
+          <span className="arch-arrow">&rarr;</span> Vultr Cloud
           <span className="arch-arrow">&rarr;</span> Claude Agent{" "}
           <span className="arch-arrow">&rarr;</span> Tests{" "}
           <span className="arch-arrow">&rarr;</span> GitHub PR
