@@ -114,7 +114,6 @@ export default function NewProjectPage() {
         }));
     }, []);
 
-    // Map SSE status to our step keys
     const mapAnalysisStatus = (status: string): StepKey | null => {
         const mapping: Record<string, StepKey> = {
             pending: "trigger_analysis",
@@ -150,7 +149,6 @@ export default function NewProjectPage() {
             isComplete: false,
         });
 
-        // Normalize the URL
         let normalizedUrl = repoUrl.trim();
         if (!normalizedUrl.startsWith("http")) {
             normalizedUrl = "https://" + normalizedUrl;
@@ -180,12 +178,7 @@ export default function NewProjectPage() {
             projectName = createData.project.name;
             techStack = createData.tech_stack || [];
 
-            setPipeline((prev) => ({
-                ...prev,
-                projectId,
-                projectName,
-                techStack,
-            }));
+            setPipeline((prev) => ({ ...prev, projectId, projectName, techStack }));
             markStep("create_project", "done");
         } catch (err) {
             setError("create_project", err instanceof Error ? err.message : "Failed to create project");
@@ -216,10 +209,7 @@ export default function NewProjectPage() {
             const uploadData = await uploadRes.json();
             requirementCount = uploadData.requirements?.length ?? 0;
 
-            setPipeline((prev) => ({
-                ...prev,
-                requirementCount,
-            }));
+            setPipeline((prev) => ({ ...prev, requirementCount }));
             markStep("upload_prd", "done");
         } catch (err) {
             setError("upload_prd", err instanceof Error ? err.message : "Failed to upload PRD");
@@ -247,10 +237,7 @@ export default function NewProjectPage() {
             runId = analyzeData.run_id;
             sseUrl = analyzeData.sse_url;
 
-            setPipeline((prev) => ({
-                ...prev,
-                runId,
-            }));
+            setPipeline((prev) => ({ ...prev, runId }));
             markStep("trigger_analysis", "done");
         } catch (err) {
             setError("trigger_analysis", err instanceof Error ? err.message : "Failed to trigger analysis");
@@ -282,7 +269,6 @@ export default function NewProjectPage() {
                     }
 
                     if (data.type === "complete") {
-                        // Mark all steps done
                         setPipeline((prev) => {
                             const newStatuses = { ...prev.stepStatuses };
                             for (const step of PIPELINE_STEPS) {
@@ -302,8 +288,6 @@ export default function NewProjectPage() {
                         eventSource.close();
                         eventSourceRef.current = null;
                         setIsLoading(false);
-
-                        // Fetch final findings
                         fetchFindings(projectId, runId);
                     }
 
@@ -320,18 +304,15 @@ export default function NewProjectPage() {
             };
 
             eventSource.onerror = () => {
-                // SSE connection lost — start polling as fallback
                 eventSource.close();
                 eventSourceRef.current = null;
                 startPolling(projectId, runId);
             };
         } catch {
-            // SSE not supported — fallback to polling
             startPolling(projectId, runId);
         }
     };
 
-    // Polling fallback if SSE fails
     const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const startPolling = useCallback((projectId: string, runId: string) => {
@@ -406,7 +387,6 @@ export default function NewProjectPage() {
         }, 3000);
     }, [markStep, markStepsDoneBefore, setError]);
 
-    // Cleanup polling on unmount
     useEffect(() => {
         return () => {
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
@@ -456,14 +436,17 @@ export default function NewProjectPage() {
                     {description}
                 </div>
             </div>
+            {/* ✅ FIX: cursor-pointer on toggle */}
             <div
                 onClick={onToggle}
-                className={`relative w-10 h-5 rounded-full border transition-all duration-200 cursor-pointer ${isEnabled ? "bg-accent/20 border-accent/50" : "bg-surface3 border-border2"
-                    }`}
+                className={`relative w-10 h-5 rounded-full border transition-all duration-200 cursor-pointer ${
+                    isEnabled ? "bg-accent/20 border-accent/50" : "bg-surface3 border-border2"
+                }`}
             >
                 <div
-                    className={`absolute top-0.5 w-3.5 h-3.5 rounded-full transition-all duration-200 ${isEnabled ? "bg-accent left-5" : "bg-mm-muted left-0.5"
-                        }`}
+                    className={`absolute top-0.5 w-3.5 h-3.5 rounded-full transition-all duration-200 ${
+                        isEnabled ? "bg-accent left-5" : "bg-mm-muted left-0.5"
+                    }`}
                 />
             </div>
         </div>
@@ -471,16 +454,16 @@ export default function NewProjectPage() {
 
     return (
         <AppLayout>
-            <div className="max-w-2xl mx-auto py-12 px-8">
-                {/* Back Link */}
+            {/* ✅ FIX: cursor-auto on root so cursor never disappears */}
+            <div className="max-w-2xl mx-auto py-12 px-8 cursor-auto">
+                {/* ✅ FIX: cursor-pointer on back link */}
                 <Link
                     href="/dashboard"
-                    className="font-mono text-[10px] text-mm-muted hover:text-mm-text transition-colors duration-200 uppercase tracking-[0.2em] font-bold inline-flex items-center gap-2"
+                    className="font-mono text-[10px] text-mm-muted hover:text-mm-text transition-colors duration-200 uppercase tracking-[0.2em] font-bold inline-flex items-center gap-2 cursor-pointer"
                 >
                     &larr; Back to Dashboard
                 </Link>
 
-                {/* Page Title */}
                 <div className="mt-8 mb-10">
                     <h1 className="font-display font-extrabold text-3xl text-mm-text tracking-tight uppercase">
                         New Project
@@ -490,7 +473,7 @@ export default function NewProjectPage() {
                     </p>
                 </div>
 
-                {/* Form Card — hide when pipeline is active */}
+                {/* Form Card */}
                 {!showPipeline && (
                     <form onSubmit={handleSubmit} className="bg-surface border border-border rounded-2xl p-8 shadow-xl shadow-black/20">
 
@@ -499,12 +482,13 @@ export default function NewProjectPage() {
                             <label className="font-mono text-[10px] text-mm-muted uppercase tracking-[0.2em] font-bold mb-3 block">
                                 GitHub Repository URL
                             </label>
+                            {/* ✅ FIX: cursor-text on input */}
                             <input
                                 type="text"
                                 value={repoUrl}
                                 onChange={(e) => setRepoUrl(e.target.value)}
                                 placeholder="github.com/owner/repository"
-                                className="w-full bg-surface2 border border-border2 rounded-xl px-4 py-3.5 font-mono text-sm text-mm-text placeholder:text-mm-subtle focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/20 transition-all duration-200"
+                                className="w-full bg-surface2 border border-border2 rounded-xl px-4 py-3.5 font-mono text-sm text-mm-text placeholder:text-mm-subtle focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/20 transition-all duration-200 cursor-text"
                                 required
                             />
                             <p className="font-mono text-[10px] text-mm-subtle mt-2 uppercase tracking-wide">
@@ -528,10 +512,12 @@ export default function NewProjectPage() {
                                 className="hidden"
                             />
 
+                            {/* ✅ FIX: cursor-pointer on file drop zone */}
                             <div
                                 onClick={() => fileInputRef.current?.click()}
-                                className={`w-full border-2 border-dashed border-border2 rounded-xl p-10 text-center cursor-pointer hover:border-accent/40 hover:bg-accent/5 transition-all duration-200 ${prdFile ? "bg-accent/5 border-accent/30" : ""
-                                    }`}
+                                className={`w-full border-2 border-dashed border-border2 rounded-xl p-10 text-center cursor-pointer hover:border-accent/40 hover:bg-accent/5 transition-all duration-200 ${
+                                    prdFile ? "bg-accent/5 border-accent/30" : ""
+                                }`}
                             >
                                 {!prdFile ? (
                                     <>
@@ -552,13 +538,14 @@ export default function NewProjectPage() {
                                         <div className="font-mono text-[10px] text-mm-muted mt-1 uppercase tracking-widest">
                                             {(prdFile.size / 1024).toFixed(1)} KB
                                         </div>
+                                        {/* ✅ FIX: cursor-pointer on remove button */}
                                         <button
                                             type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 setPrdFile(null);
                                             }}
-                                            className="text-red-400 text-[10px] font-mono hover:text-red-300 mt-4 uppercase tracking-[0.2em] font-bold"
+                                            className="text-red-400 text-[10px] font-mono hover:text-red-300 mt-4 uppercase tracking-[0.2em] font-bold cursor-pointer"
                                         >
                                             Remove File
                                         </button>
@@ -590,12 +577,15 @@ export default function NewProjectPage() {
                             />
                         </div>
 
-                        {/* Submit Button */}
+                        {/* ✅ FIX: cursor-pointer / cursor-not-allowed on submit button */}
                         <button
                             type="submit"
                             disabled={isLoading || !repoUrl || !prdFile}
-                            className={`w-full py-4 px-6 rounded-xl bg-accent text-white font-body font-bold text-xs uppercase tracking-[0.2em] transition-all duration-300 shadow-xl shadow-accent/20 flex items-center justify-center ${isLoading || !repoUrl || !prdFile ? "opacity-50 cursor-not-allowed" : "hover:bg-accent2 hover:shadow-accent2/30 transform hover:-translate-y-0.5"
-                                }`}
+                            className={`w-full py-4 px-6 rounded-xl bg-accent text-white font-body font-bold text-xs uppercase tracking-[0.2em] transition-all duration-300 shadow-xl shadow-accent/20 flex items-center justify-center ${
+                                isLoading || !repoUrl || !prdFile
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : "cursor-pointer hover:bg-accent2 hover:shadow-accent2/30 transform hover:-translate-y-0.5"
+                            }`}
                         >
                             {isLoading ? (
                                 <div className="flex items-center gap-3">
@@ -603,7 +593,7 @@ export default function NewProjectPage() {
                                     <span>Setting up project...</span>
                                 </div>
                             ) : (
-                                "Create Project &rarr;"
+                                "Create Project →"
                             )}
                         </button>
                     </form>
@@ -660,7 +650,6 @@ export default function NewProjectPage() {
 
                                 return (
                                     <div key={step.key} className="flex gap-4">
-                                        {/* Vertical line + circle */}
                                         <div className="flex flex-col items-center">
                                             <div
                                                 className={`w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
@@ -690,7 +679,6 @@ export default function NewProjectPage() {
                                                     <div className="w-1.5 h-1.5 rounded-full bg-border2" />
                                                 )}
                                             </div>
-                                            {/* Connector line */}
                                             {!isLast && (
                                                 <div
                                                     className={`w-0.5 h-8 transition-all duration-300 ${
@@ -704,7 +692,6 @@ export default function NewProjectPage() {
                                             )}
                                         </div>
 
-                                        {/* Step content */}
                                         <div className={`pb-${isLast ? "0" : "4"} pt-1`}>
                                             <div
                                                 className={`font-mono text-xs font-semibold transition-colors duration-200 ${
@@ -742,6 +729,7 @@ export default function NewProjectPage() {
                                 <div className="font-mono text-xs text-red-300">
                                     {pipeline.errorMessage}
                                 </div>
+                                {/* ✅ FIX: cursor-pointer on Try Again */}
                                 <button
                                     onClick={() => {
                                         setPipeline((prev) => ({
@@ -754,7 +742,7 @@ export default function NewProjectPage() {
                                         }));
                                         setIsLoading(false);
                                     }}
-                                    className="mt-3 font-mono text-[10px] text-red-400 hover:text-red-300 uppercase tracking-[0.2em] font-bold"
+                                    className="mt-3 font-mono text-[10px] text-red-400 hover:text-red-300 uppercase tracking-[0.2em] font-bold cursor-pointer"
                                 >
                                     &larr; Try Again
                                 </button>
@@ -768,7 +756,6 @@ export default function NewProjectPage() {
                                     Analysis Results
                                 </div>
 
-                                {/* Health score */}
                                 {pipeline.healthScore !== null && (
                                     <div className="mb-6">
                                         <div className="flex items-end gap-3 mb-2">
@@ -802,7 +789,6 @@ export default function NewProjectPage() {
                                     </div>
                                 )}
 
-                                {/* Stats */}
                                 <div className="grid grid-cols-3 gap-4 mb-6">
                                     <div className="bg-surface2 border border-border2 rounded-xl p-4 text-center">
                                         <div className="font-display font-extrabold text-2xl text-mm-text">
@@ -830,17 +816,17 @@ export default function NewProjectPage() {
                                     </div>
                                 </div>
 
-                                {/* View findings button */}
+                                {/* ✅ FIX: cursor-pointer on both completion buttons */}
                                 <button
                                     onClick={() => router.push(`/project/${pipeline.projectId}`)}
-                                    className="w-full py-4 px-6 rounded-xl bg-accent text-white font-body font-bold text-xs uppercase tracking-[0.2em] transition-all duration-300 shadow-xl shadow-accent/20 hover:bg-accent2 hover:shadow-accent2/30 transform hover:-translate-y-0.5"
+                                    className="w-full py-4 px-6 rounded-xl bg-accent text-white font-body font-bold text-xs uppercase tracking-[0.2em] transition-all duration-300 shadow-xl shadow-accent/20 hover:bg-accent2 hover:shadow-accent2/30 transform hover:-translate-y-0.5 cursor-pointer"
                                 >
-                                    View Detailed Findings &rarr;
+                                    View Detailed Findings →
                                 </button>
 
                                 <button
                                     onClick={() => router.push("/dashboard")}
-                                    className="w-full mt-3 py-3 px-6 rounded-xl bg-surface2 border border-border2 text-mm-muted font-mono text-[10px] uppercase tracking-[0.2em] font-bold hover:border-border hover:text-mm-text transition-all duration-200"
+                                    className="w-full mt-3 py-3 px-6 rounded-xl bg-surface2 border border-border2 text-mm-muted font-mono text-[10px] uppercase tracking-[0.2em] font-bold hover:border-border hover:text-mm-text transition-all duration-200 cursor-pointer"
                                 >
                                     Back to Dashboard
                                 </button>
