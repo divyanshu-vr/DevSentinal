@@ -60,12 +60,12 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
 
-    /* Landing Page Specific Variables */
+    /* Landing Page & Dashboard Specific Variables */
     --bg: #07080f;
     --surface: #0d0e18;
     --surface2: #161625;
+    --surface3: #1e1e35;
     --border: rgba(255, 255, 255, 0.08);
-    /* Or #1e1e35 */
     --border2: rgba(255, 255, 255, 0.12);
     --accent: #7c3aed;
     --accent2: #a78bfa;
@@ -73,6 +73,7 @@
     --blue: #3b82f6;
     --text: #e2e8f0;
     --muted: #8b8b9e;
+    --subtle: #4b4b61;
     --white: #ffffff;
   }
 }

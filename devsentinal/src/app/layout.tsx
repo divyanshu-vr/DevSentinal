@@ -25,6 +25,8 @@ export const metadata: Metadata = {
   description: "Fix GitHub issues while you sleep.",
 };
 
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,7 +35,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${syne.variable} ${jetbrainsMono.variable} ${dmSans.variable} dark`}>
       <body className="antialiased">
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
       </body>
     </html>
   );
