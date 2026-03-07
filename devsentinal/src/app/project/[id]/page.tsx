@@ -70,7 +70,6 @@ export default function ProjectDetailPage() {
             setError(null);
 
             try {
-                // Fetch project
                 const projectRes = await fetch(`/api/projects`);
                 if (!projectRes.ok) throw new Error("Failed to fetch projects");
                 const projectData = await projectRes.json();
@@ -78,7 +77,6 @@ export default function ProjectDetailPage() {
                 if (!proj) throw new Error("Project not found");
                 setProject(proj);
 
-                // Fetch findings (latest run)
                 const findingsRes = await fetch(`/api/projects/${projectId}/findings?run_id=latest`);
                 if (findingsRes.ok) {
                     const findingsData = await findingsRes.json();
@@ -106,7 +104,7 @@ export default function ProjectDetailPage() {
     if (loading) {
         return (
             <AppLayout>
-                <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="flex items-center justify-center min-h-[60vh] cursor-auto">
                     <LoadingSpinner size="lg" label="Loading project..." />
                 </div>
             </AppLayout>
@@ -116,12 +114,13 @@ export default function ProjectDetailPage() {
     if (error || !project) {
         return (
             <AppLayout>
-                <div className="max-w-2xl mx-auto py-12 px-8">
+                <div className="max-w-2xl mx-auto py-12 px-8 cursor-auto">
                     <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 text-center">
                         <div className="font-mono text-sm text-red-400 mb-4">{error || "Project not found"}</div>
+                        {/* ✅ FIX: cursor-pointer on button */}
                         <button
                             onClick={() => router.push("/dashboard")}
-                            className="font-mono text-[10px] text-mm-muted hover:text-mm-text uppercase tracking-[0.2em] font-bold"
+                            className="font-mono text-[10px] text-mm-muted hover:text-mm-text uppercase tracking-[0.2em] font-bold cursor-pointer"
                         >
                             &larr; Back to Dashboard
                         </button>
@@ -133,11 +132,13 @@ export default function ProjectDetailPage() {
 
     return (
         <AppLayout>
-            <div className="max-w-5xl mx-auto py-8 px-8">
+            {/* ✅ FIX: cursor-auto on root div so cursor is always visible */}
+            <div className="max-w-5xl mx-auto py-8 px-8 cursor-auto">
                 {/* Breadcrumb */}
+                {/* ✅ FIX: cursor-pointer on Link */}
                 <Link
                     href="/dashboard"
-                    className="font-mono text-[10px] text-mm-muted hover:text-mm-text transition-colors duration-200 uppercase tracking-[0.2em] font-bold inline-flex items-center gap-2"
+                    className="font-mono text-[10px] text-mm-muted hover:text-mm-text transition-colors duration-200 uppercase tracking-[0.2em] font-bold inline-flex items-center gap-2 cursor-pointer"
                 >
                     &larr; Dashboard
                 </Link>
@@ -201,7 +202,6 @@ export default function ProjectDetailPage() {
                     <>
                         {/* Health score + summary strip */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                            {/* Health score card */}
                             <div className="bg-surface border border-border rounded-xl p-5 md:col-span-1">
                                 <div className="font-mono text-[10px] text-mm-muted uppercase tracking-wider mb-2">
                                     Health Score
@@ -234,7 +234,6 @@ export default function ProjectDetailPage() {
                                 </div>
                             </div>
 
-                            {/* Stats */}
                             <div className="bg-surface border border-border rounded-xl p-5 flex flex-col justify-center">
                                 <div className="font-display font-extrabold text-3xl text-mm-text tracking-tight">
                                     {run.total_tests}
@@ -268,10 +267,11 @@ export default function ProjectDetailPage() {
                                 { key: "pass" as TabKey, label: "Passed", count: passCount },
                                 { key: "fail" as TabKey, label: "Failed", count: failCount },
                             ].map(({ key, label, count }) => (
+                                // ✅ FIX: cursor-pointer on tab buttons
                                 <button
                                     key={key}
                                     onClick={() => setActiveTab(key)}
-                                    className={`font-mono text-[10px] px-4 py-2 rounded-md uppercase tracking-wider font-bold transition-all duration-200 ${
+                                    className={`font-mono text-[10px] px-4 py-2 rounded-md uppercase tracking-wider font-bold transition-all duration-200 cursor-pointer ${
                                         activeTab === key
                                             ? "bg-surface border border-border text-mm-text shadow-sm"
                                             : "text-mm-muted hover:text-mm-text"
@@ -300,12 +300,12 @@ export default function ProjectDetailPage() {
                                         key={finding.id}
                                         className="bg-surface border border-border rounded-xl overflow-hidden transition-all duration-200 hover:border-border2"
                                     >
-                                        {/* Finding header row */}
+                                        {/* ✅ FIX: cursor-pointer on finding expand button */}
                                         <button
                                             onClick={() =>
                                                 setExpandedFinding(isExpanded ? null : finding.id)
                                             }
-                                            className="w-full px-5 py-4 flex items-center gap-4 text-left"
+                                            className="w-full px-5 py-4 flex items-center gap-4 text-left cursor-pointer"
                                         >
                                             {/* Status badge */}
                                             <div
