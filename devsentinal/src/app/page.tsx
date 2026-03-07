@@ -158,7 +158,7 @@ export default function Home() {
 
       <nav id="navbar">
         <a href="#" className="logo">
-          <span>⚡</span> MiniMinions
+          <span>⚡</span>DevSentinal
         </a>
         <div className="nav-links">
           <a href="#architecture" className="nav-link clickable">
