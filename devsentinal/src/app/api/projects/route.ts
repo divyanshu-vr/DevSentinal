@@ -68,13 +68,25 @@ export async function POST(req: NextRequest) {
 
     const repoOwner = urlMatch[1];
     const repoName = urlMatch[2];
-    const branch = 'main';
 
     const supabase = createServerClient();
 
     // Fetch repo tree and detect tech stack using Person B's functions
     // Use GitHub token if available, otherwise use a public-access Octokit
     const octokit = createOctokit(user.github_token ?? '');
+
+    // Auto-detect default branch instead of hardcoding 'main'
+    let branch = 'main';
+    try {
+      const { data: repoData } = await octokit.rest.repos.get({
+        owner: repoOwner,
+        repo: repoName,
+      });
+      branch = repoData.default_branch;
+    } catch {
+      // Fallback to 'main' if we can't detect
+    }
+
     const tree = await fetchRepoTree(octokit, repoOwner, repoName, branch);
     const techStack = await detectTechStack(tree);
 

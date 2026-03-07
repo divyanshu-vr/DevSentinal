@@ -18,6 +18,22 @@ export type User = {
 };
 
 export async function requireAuth(req: NextRequest): Promise<User | null> {
+  // Dev bypass: when Auth0 is not configured, return the seeded stub user
+  if (
+    !process.env.AUTH0_DOMAIN ||
+    !process.env.AUTH0_CLIENT_ID ||
+    !process.env.AUTH0_SECRET
+  ) {
+    return {
+      id: "00000000-0000-0000-0000-000000000001",
+      github_id: "stub-github-id",
+      email: "stub@example.com",
+      name: "stub-user",
+      avatar_url: "",
+      github_token: null,
+    };
+  }
+
   try {
     const session = await auth0.getSession(req);
 

@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, SchemaType, type FunctionDeclaration } from '@google/generative-ai';
+import OpenAI from 'openai';
 import type { Requirement, Finding, RepoTreeNode } from '@/types';
 import {
   CODEBASE_UNDERSTANDING_PROMPT,
@@ -6,19 +6,25 @@ import {
 } from '@/lib/ai/prompts/analyze-codebase';
 import { GENERATE_TESTS_PROMPT } from '@/lib/ai/prompts/generate-tests';
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY!);
+const client = new OpenAI({
+  apiKey: process.env.GROQ_API_KEY!,
+  baseURL: 'https://api.groq.com/openai/v1',
+});
+
+const MODEL = 'qwen/qwen3-32b';
 
 // ============================================================
-// Shared model factory — always uses JSON mode
+// Helper: call Groq and return parsed JSON
 // ============================================================
 
-function getJsonModel() {
-  return genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash',
-    generationConfig: {
-      responseMimeType: 'application/json',
-    },
+async function callJsonModel(prompt: string): Promise<string> {
+  const response = await client.chat.completions.create({
+    model: MODEL,
+    messages: [{ role: 'user', content: prompt }],
+    response_format: { type: 'json_object' },
+    temperature: 0.1,
   });
+  return response.choices[0]?.message?.content ?? '{}';
 }
 
 // ============================================================
@@ -84,7 +90,7 @@ interface GeneratedTestCase {
 }
 
 // ============================================================
-// Raw finding from Gemini (Pass 2 output)
+// Raw finding from LLM (Pass 2 output)
 // ============================================================
 
 interface RawFinding {
@@ -128,13 +134,6 @@ const PRIORITY_PATTERNS = [
   /\blayout\.tsx$/,
 ];
 
-/**
- * Given a full file tree and a set of requirements, pick the most relevant
- * file paths to send to Gemini. Prioritizes files matching:
- * 1. Endpoints mentioned in requirements
- * 2. Common route/model/config patterns
- * 3. Alphabetical order as fallback
- */
 export function prioritizeFiles(
   tree: RepoTreeNode[],
   requirements: Requirement[],
@@ -144,24 +143,19 @@ export function prioritizeFiles(
     .filter((n) => n.type === 'blob')
     .map((n) => n.path);
 
-  // Extract endpoint keywords from requirements to match against file paths
   const endpointKeywords: string[] = requirements
     .filter((r) => r.endpoint)
     .map((r) => {
-      // "/api/users" -> "users"
       const parts = r.endpoint!.split('/').filter(Boolean);
       return parts[parts.length - 1] || '';
     })
     .filter(Boolean);
 
-  // Score each file
   const scored = blobs.map((path) => {
     let score = 0;
 
-    // Boost files whose content we actually have
     if (availableContents[path]) score += 5;
 
-    // Boost files matching priority patterns
     for (const pattern of PRIORITY_PATTERNS) {
       if (pattern.test(path)) {
         score += 10;
@@ -169,7 +163,6 @@ export function prioritizeFiles(
       }
     }
 
-    // Boost files matching endpoint keywords from requirements
     for (const kw of endpointKeywords) {
       if (path.toLowerCase().includes(kw.toLowerCase())) {
         score += 15;
@@ -177,12 +170,10 @@ export function prioritizeFiles(
       }
     }
 
-    // Slight penalty for test files (less relevant for compliance audit)
     if (/\b(test|spec|__tests__)\b/i.test(path)) {
       score -= 5;
     }
 
-    // Slight penalty for node_modules, .next, dist, build
     if (/node_modules|\.next|dist\/|build\//.test(path)) {
       score -= 100;
     }
@@ -190,13 +181,11 @@ export function prioritizeFiles(
     return { path, score };
   });
 
-  // Sort descending by score, then alphabetically for tie-breaking
   scored.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     return a.path.localeCompare(b.path);
   });
 
-  // Take top N files that we have content for
   const selected = scored
     .filter((s) => availableContents[s.path])
     .slice(0, MAX_KEY_FILES)
@@ -212,8 +201,6 @@ export function prioritizeFiles(
 export async function extractRequirements(
   prdText: string
 ): Promise<ExtractedRequirement[]> {
-  const model = getJsonModel();
-
   const prompt = `You are a senior software engineer. Analyze the following Product Requirements Document (PRD) and extract ALL structured requirements.
 
 For each requirement, determine:
@@ -225,16 +212,16 @@ For each requirement, determine:
 - expected_behavior: what the expected behavior should be (null if not specified)
 - priority: one of "critical", "high", "medium", or "low"
 
-Return a JSON array of requirement objects. Be thorough — extract every feature, endpoint, acceptance criteria, and edge case mentioned in the PRD.
+Return a JSON object with a single key "requirements" containing an array of requirement objects. Be thorough — extract every feature, endpoint, acceptance criteria, and edge case mentioned in the PRD.
 
 PRD Text:
 ${prdText}`;
 
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
-  const requirements: ExtractedRequirement[] = JSON.parse(text);
+  const text = await callJsonModel(prompt);
+  const parsed = JSON.parse(text);
+  const requirements: ExtractedRequirement[] = parsed.requirements ?? parsed;
 
-  return requirements;
+  return Array.isArray(requirements) ? requirements : [];
 }
 
 // ============================================================
@@ -247,8 +234,6 @@ export async function generateTestCases(
   keyFiles: string[],
   requirements: Requirement[]
 ): Promise<GeneratedTestCase[]> {
-  const model = getJsonModel();
-
   const fileContentsStr = keyFiles
     .map((fp) => `--- ${fp} ---\n${fileContents[fp] ?? '(content not available)'}`)
     .join('\n\n');
@@ -271,13 +256,15 @@ ${JSON.stringify(codebaseAnalysis, null, 2)}
 ${fileContentsStr}
 
 ## Requirements
-${requirementsStr}`;
+${requirementsStr}
 
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
-  const testCases: GeneratedTestCase[] = JSON.parse(text);
+Return a JSON object with a single key "test_cases" containing an array of test case objects.`;
 
-  return testCases;
+  const text = await callJsonModel(prompt);
+  const parsed = JSON.parse(text);
+  const testCases: GeneratedTestCase[] = parsed.test_cases ?? parsed;
+
+  return Array.isArray(testCases) ? testCases : [];
 }
 
 // ============================================================
@@ -289,8 +276,6 @@ export async function understandCodebase(
   fileContents: Record<string, string>,
   keyFiles: string[]
 ): Promise<CodebaseAnalysis> {
-  const model = getJsonModel();
-
   const treeStr = fileTree.map((n) => `${n.type === 'tree' ? 'd' : 'f'} ${n.path}`).join('\n');
 
   const fileContentsStr = keyFiles
@@ -303,10 +288,11 @@ export async function understandCodebase(
 ${treeStr}
 
 ## Key Source Files
-${fileContentsStr}`;
+${fileContentsStr}
 
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
+Return your analysis as a JSON object.`;
+
+  const text = await callJsonModel(prompt);
   const analysis: CodebaseAnalysis = JSON.parse(text);
 
   return analysis;
@@ -321,14 +307,9 @@ export async function analyzeCodebase(
   fileContents: Record<string, string>,
   requirements: Requirement[]
 ): Promise<Finding[]> {
-  // Step 1: Prioritize files to send to Gemini (max ~50 key files)
   const keyFiles = prioritizeFiles(fileTree, requirements, fileContents);
 
-  // Step 2: Pass 1 — Understand the codebase structure
   const codebaseAnalysis = await understandCodebase(fileTree, fileContents, keyFiles);
-
-  // Step 3: Pass 2 — Compare requirements against codebase and generate findings
-  const model = getJsonModel();
 
   const treeStr = fileTree.map((n) => `${n.type === 'tree' ? 'd' : 'f'} ${n.path}`).join('\n');
 
@@ -357,16 +338,17 @@ ${treeStr}
 ${fileContentsStr}
 
 ## Requirements to Verify
-${requirementsStr}`;
+${requirementsStr}
 
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
-  const rawFindings: RawFinding[] = JSON.parse(text);
+Return a JSON object with a single key "findings" containing an array of finding objects.`;
 
-  // Map raw findings to the Finding type shape (without id, run_id, created_at — those are set by DB)
-  const findings: Finding[] = rawFindings.map((rf) => ({
-    id: '', // will be set by database
-    run_id: '', // will be set by caller
+  const text = await callJsonModel(prompt);
+  const parsed = JSON.parse(text);
+  const rawFindings: RawFinding[] = parsed.findings ?? parsed;
+
+  const findings: Finding[] = (Array.isArray(rawFindings) ? rawFindings : []).map((rf) => ({
+    id: '',
+    run_id: '',
     requirement_id: rf.requirement_id,
     status: rf.status,
     feature_name: rf.feature_name,
@@ -379,7 +361,7 @@ ${requirementsStr}`;
     code_snippet: rf.code_snippet,
     explanation: rf.explanation,
     fix_confidence: rf.status === 'fail' ? Math.max(0, Math.min(1, rf.fix_confidence)) : null,
-    created_at: '', // will be set by database
+    created_at: '',
   }));
 
   return findings;
@@ -392,89 +374,73 @@ ${requirementsStr}`;
 import type { AgentContext, AgentLogEntry } from '@/types';
 import { buildFixPrompt } from '@/lib/ai/prompts/fix-code';
 
-/**
- * Sandbox interface — provided by another developer
- * These functions interact with the sandboxed repository
- */
 interface Sandbox {
   readFile: (path: string) => Promise<string>;
   writeFile: (path: string, content: string) => Promise<void>;
   runCommand: (command: string) => Promise<string>;
 }
 
-/**
- * Tool definitions for Gemini function calling
- */
-const AGENT_TOOLS: FunctionDeclaration[] = [
+const AGENT_TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
   {
-    name: 'read_file',
-    description: 'Read a file from the repository by path',
-    parameters: {
-      type: SchemaType.OBJECT,
-      properties: {
-        path: {
-          type: SchemaType.STRING,
-          description: 'File path relative to repo root',
+    type: 'function',
+    function: {
+      name: 'read_file',
+      description: 'Read a file from the repository by path',
+      parameters: {
+        type: 'object',
+        properties: {
+          path: { type: 'string', description: 'File path relative to repo root' },
         },
+        required: ['path'],
       },
-      required: ['path'],
     },
   },
   {
-    name: 'write_file',
-    description: 'Write content to a file (overwrites existing content)',
-    parameters: {
-      type: SchemaType.OBJECT,
-      properties: {
-        path: {
-          type: SchemaType.STRING,
-          description: 'File path relative to repo root',
+    type: 'function',
+    function: {
+      name: 'write_file',
+      description: 'Write content to a file (overwrites existing content)',
+      parameters: {
+        type: 'object',
+        properties: {
+          path: { type: 'string', description: 'File path relative to repo root' },
+          content: { type: 'string', description: 'New file content' },
         },
-        content: {
-          type: SchemaType.STRING,
-          description: 'New file content',
-        },
+        required: ['path', 'content'],
       },
-      required: ['path', 'content'],
     },
   },
   {
-    name: 'run_bash',
-    description: 'Execute a bash command in the repository root',
-    parameters: {
-      type: SchemaType.OBJECT,
-      properties: {
-        command: {
-          type: SchemaType.STRING,
-          description: 'Bash command to execute',
+    type: 'function',
+    function: {
+      name: 'run_bash',
+      description: 'Execute a bash command in the repository root',
+      parameters: {
+        type: 'object',
+        properties: {
+          command: { type: 'string', description: 'Bash command to execute' },
         },
+        required: ['command'],
       },
-      required: ['command'],
     },
   },
   {
-    name: 'search_codebase',
-    description: 'Search for patterns in the codebase using grep',
-    parameters: {
-      type: SchemaType.OBJECT,
-      properties: {
-        pattern: {
-          type: SchemaType.STRING,
-          description: 'Search pattern (regex)',
+    type: 'function',
+    function: {
+      name: 'search_codebase',
+      description: 'Search for patterns in the codebase using grep',
+      parameters: {
+        type: 'object',
+        properties: {
+          pattern: { type: 'string', description: 'Search pattern (regex)' },
+          path: { type: 'string', description: 'Optional path to search in (defaults to entire repo)' },
         },
-        path: {
-          type: SchemaType.STRING,
-          description: 'Optional path to search in (defaults to entire repo)',
-        },
+        required: ['pattern'],
       },
-      required: ['pattern'],
     },
   },
 ];
 
-/**
- * Execute a single tool call
- */
 async function executeTool(
   toolName: string,
   toolInput: Record<string, unknown>,
@@ -484,31 +450,24 @@ async function executeTool(
     switch (toolName) {
       case 'read_file': {
         const path = toolInput.path as string;
-        const content = await sandbox.readFile(path);
-        return content;
+        return await sandbox.readFile(path);
       }
-
       case 'write_file': {
         const path = toolInput.path as string;
         const content = toolInput.content as string;
         await sandbox.writeFile(path, content);
         return `Successfully wrote to ${path}`;
       }
-
       case 'run_bash': {
         const command = toolInput.command as string;
-        const output = await sandbox.runCommand(command);
-        return output;
+        return await sandbox.runCommand(command);
       }
-
       case 'search_codebase': {
         const pattern = toolInput.pattern as string;
         const path = toolInput.path as string | undefined;
         const grepCommand = `grep -rn "${pattern}" ${path || '.'}`;
-        const output = await sandbox.runCommand(grepCommand);
-        return output;
+        return await sandbox.runCommand(grepCommand);
       }
-
       default:
         return `Error: Unknown tool ${toolName}`;
     }
@@ -517,9 +476,6 @@ async function executeTool(
   }
 }
 
-/**
- * Main agent loop — runs Gemini with tool calling until completion
- */
 export async function runAgentLoop(
   context: AgentContext,
   sandbox: Sandbox
@@ -527,79 +483,60 @@ export async function runAgentLoop(
   files_changed: string[];
   agent_log: AgentLogEntry[];
 }> {
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-3-flash',
-    tools: [{ functionDeclarations: AGENT_TOOLS }],
-  });
-
   const systemPrompt = buildFixPrompt(context);
-  const chat = model.startChat({
-    history: [
-      {
-        role: 'user',
-        parts: [{ text: systemPrompt }],
-      },
-      {
-        role: 'model',
-        parts: [{ text: 'Understood. I will fix the bug following the workflow. Let me start by reading the broken file.' }],
-      },
-    ],
-  });
+
+  const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: 'Begin fixing the bug.' },
+  ];
 
   const filesChanged = new Set<string>();
   const agentLog: AgentLogEntry[] = [];
   const MAX_ITERATIONS = 15;
 
-  let iteration = 0;
-  let lastMessage = 'Begin fixing the bug.';
+  for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
+    const response = await client.chat.completions.create({
+      model: MODEL,
+      messages,
+      tools: AGENT_TOOLS,
+      temperature: 0.1,
+    });
 
-  while (iteration < MAX_ITERATIONS) {
-    iteration++;
+    const choice = response.choices[0];
+    const assistantMessage = choice.message;
+    messages.push(assistantMessage);
 
-    const result = await chat.sendMessage(lastMessage);
-    const response = result.response;
-
-    // Check if Gemini wants to call a function
-    const functionCalls = response.functionCalls();
-
-    if (!functionCalls || functionCalls.length === 0) {
-      // No more tool calls — agent is done
+    if (!assistantMessage.tool_calls || assistantMessage.tool_calls.length === 0) {
       break;
     }
 
-    // Execute all function calls
-    const functionResponses = await Promise.all(
-      functionCalls.map(async (call) => {
-        const toolName = call.name;
-        const toolInput = (call.args ?? {}) as Record<string, unknown>;
-        const startTime = Date.now();
+    for (const toolCall of assistantMessage.tool_calls) {
+      if (toolCall.type !== 'function') continue;
+      const toolName = toolCall.function.name;
+      const toolInput = JSON.parse(toolCall.function.arguments);
+      const startTime = Date.now();
 
-        const output = await executeTool(toolName, toolInput, sandbox);
-        const duration = Date.now() - startTime;
+      const output = await executeTool(toolName, toolInput, sandbox);
+      const duration = Date.now() - startTime;
 
-        // Track files changed
-        if (toolName === 'write_file' && toolInput.path) {
-          filesChanged.add(toolInput.path as string);
-        }
+      if (toolName === 'write_file' && toolInput.path) {
+        filesChanged.add(toolInput.path as string);
+      }
 
-        // Log the tool execution
-        agentLog.push({
-          timestamp: new Date().toISOString(),
-          tool: toolName as AgentLogEntry['tool'],
-          input: toolInput,
-          output,
-          duration_ms: duration,
-        });
+      agentLog.push({
+        timestamp: new Date().toISOString(),
+        tool: toolName as AgentLogEntry['tool'],
+        input: toolInput,
+        output,
+        duration_ms: duration,
+      });
 
-        return {
-          name: call.name,
-          response: { output },
-        };
-      })
-    );
-
-    // Send function results back to Gemini
-    lastMessage = JSON.stringify(functionResponses);
+      messages.push({
+        role: 'tool',
+        tool_call_id: toolCall.id,
+        content: output,
+      });
+    }
   }
 
   return {

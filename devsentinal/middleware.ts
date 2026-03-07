@@ -2,12 +2,21 @@
  * Root middleware for Auth0 authentication
  * Handles session management and route protection
  */
+import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth0 } from "./src/lib/auth/auth0";
 
 export async function middleware(request: NextRequest) {
+  // Dev bypass: skip Auth0 middleware when not configured
+  if (
+    !process.env.AUTH0_DOMAIN ||
+    !process.env.AUTH0_CLIENT_ID ||
+    !process.env.AUTH0_SECRET
+  ) {
+    return NextResponse.next();
+  }
+
   // Use Auth0 middleware to handle authentication
-  // This automatically manages session cookies and authentication state
+  const { auth0 } = await import("./src/lib/auth/auth0");
   return await auth0.middleware(request);
 }
 

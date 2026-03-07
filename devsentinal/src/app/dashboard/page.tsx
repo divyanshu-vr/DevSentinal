@@ -1,39 +1,24 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import AppLayout from "@/components/layout/AppLayout";
 import ProjectCard from "@/components/dashboard/ProjectCard";
+import LoadingSpinner from "@/components/shared/LoadingSpinner";
 
-const MOCK_PROJECTS = [
-    {
-        id: "1",
-        name: "api-server",
-        repo: "github.com/acehack/api-server",
-        lastRun: "2 hours ago",
-        status: "success" as const,
-        prCount: 12,
-        openIssues: 3,
-    },
-    {
-        id: "2",
-        name: "frontend-app",
-        repo: "github.com/acehack/frontend-app",
-        lastRun: "1 day ago",
-        status: "idle" as const,
-        prCount: 4,
-        openIssues: 8,
-    },
-    {
-        id: "3",
-        name: "auth-service",
-        repo: "github.com/acehack/auth-service",
-        lastRun: "5 min ago",
-        status: "running" as const,
-        prCount: 7,
-        openIssues: 1,
-    },
-];
+interface Project {
+    id: string;
+    name: string;
+    repo_url: string;
+    repo_owner: string;
+    repo_name: string;
+    branch: string;
+    tech_stack: string[];
+    status: "created" | "analyzing" | "analyzed" | "fixing" | "error";
+    health_score: number | null;
+    created_at: string;
+    updated_at: string;
+}
 
 const StatsItem = ({ value, label }: { value: string; label: string }) => (
     <div className="bg-surface border border-border rounded-xl p-5 flex flex-col justify-center">
@@ -47,6 +32,40 @@ const StatsItem = ({ value, label }: { value: string; label: string }) => (
 );
 
 export default function DashboardPage() {
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        async function fetchProjects() {
+            try {
+                const res = await fetch("/api/projects");
+                if (!res.ok) {
+                    throw new Error("Failed to fetch projects");
+                }
+                const data = await res.json();
+                setProjects(data.projects || []);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : "Failed to load projects");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchProjects();
+    }, []);
+
+    const analyzedCount = projects.filter((p) => p.status === "analyzed").length;
+    const runningCount = projects.filter((p) => p.status === "analyzing" || p.status === "fixing").length;
+    const avgHealth = projects.filter((p) => p.health_score !== null).length > 0
+        ? Math.round(
+              projects
+                  .filter((p) => p.health_score !== null)
+                  .reduce((sum, p) => sum + (p.health_score ?? 0), 0) /
+              projects.filter((p) => p.health_score !== null).length
+          )
+        : null;
+
     return (
         <AppLayout>
             <div className="p-8 max-w-7xl mx-auto">
@@ -57,7 +76,9 @@ export default function DashboardPage() {
                             Dashboard
                         </h1>
                         <p className="font-body text-mm-muted text-sm">
-                            3 projects · 2 agents available
+                            {loading
+                                ? "Loading projects..."
+                                : `${projects.length} project${projects.length !== 1 ? "s" : ""}`}
                         </p>
                     </div>
                     <Link
@@ -70,10 +91,10 @@ export default function DashboardPage() {
 
                 {/* Stats strip */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-                    <StatsItem value="23" label="Total PRs Opened" />
-                    <StatsItem value="19" label="Issues Resolved" />
-                    <StatsItem value="87s" label="Avg Time" />
-                    <StatsItem value="2" label="Active Agents" />
+                    <StatsItem value={String(projects.length)} label="Total Projects" />
+                    <StatsItem value={String(analyzedCount)} label="Analyzed" />
+                    <StatsItem value={String(runningCount)} label="Running" />
+                    <StatsItem value={avgHealth !== null ? `${avgHealth}%` : "--"} label="Avg Health" />
                 </div>
 
                 {/* Section label */}
@@ -81,12 +102,53 @@ export default function DashboardPage() {
                     Your Projects
                 </div>
 
+                {/* Loading state */}
+                {loading && (
+                    <div className="flex items-center justify-center py-20">
+                        <LoadingSpinner size="lg" label="Loading projects..." />
+                    </div>
+                )}
+
+                {/* Error state */}
+                {error && !loading && (
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 text-center">
+                        <div className="font-mono text-sm text-red-400 mb-2">{error}</div>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="font-mono text-[10px] text-mm-muted hover:text-mm-text uppercase tracking-[0.2em] font-bold"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                )}
+
+                {/* Empty state */}
+                {!loading && !error && projects.length === 0 && (
+                    <div className="bg-surface border border-border rounded-2xl p-12 text-center">
+                        <div className="font-mono text-4xl text-mm-subtle mb-4">+</div>
+                        <div className="font-body text-sm text-mm-muted mb-2">
+                            No projects yet
+                        </div>
+                        <div className="font-mono text-[10px] text-mm-subtle uppercase tracking-wider mb-6">
+                            Create your first project to get started
+                        </div>
+                        <Link
+                            href="/project/new"
+                            className="inline-block bg-accent text-white font-body font-bold text-xs uppercase tracking-widest px-6 py-3 rounded-lg hover:bg-accent2 transition-all duration-200 shadow-lg shadow-accent/20"
+                        >
+                            + New Project
+                        </Link>
+                    </div>
+                )}
+
                 {/* Project cards grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {MOCK_PROJECTS.map((project) => (
-                        <ProjectCard key={project.id} project={project} />
-                    ))}
-                </div>
+                {!loading && !error && projects.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {projects.map((project) => (
+                            <ProjectCard key={project.id} project={project} />
+                        ))}
+                    </div>
+                )}
             </div>
         </AppLayout>
     );
