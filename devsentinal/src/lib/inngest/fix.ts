@@ -9,7 +9,7 @@ import { createBranch, commitFiles, openPR } from '@/lib/github/pr';
 import { createSandbox, destroySandbox } from '@/lib/e2b/sandbox';
 import { readFile, runInSandbox, runLint, runTests } from '@/lib/e2b/runner';
 import { runAgentLoop } from '@/lib/ai/gemini';
-import type { AgentContext, Finding, Requirement, Project, FixJob, AgentLogEntry, LintResult, TestResult } from '@/types';
+import type { AgentContext, Finding, Requirement, Project, FixJob, AgentLogEntry } from '@/types';
 
 // ============================================================
 // Helper: update fix_jobs status in DB
@@ -38,7 +38,7 @@ async function updateJobStatus(
 export const fixRun = inngest.createFunction(
   { id: 'fix-run', retries: 0 },
   { event: 'fix.trigger' },
-  async ({ event, step }: { event: any; step: any }) => {
+  async ({ event, step }: { event: { data: { jobId: string } }; step: { run: <T>(name: string, fn: () => Promise<T>) => Promise<T> } }) => {
     const { jobId } = event.data as { jobId: string };
 
     let sandboxId: string | null = null;
@@ -49,7 +49,6 @@ export const fixRun = inngest.createFunction(
       // =======================================================
       const context = await step.run('context-pack', async () => {
         await updateJobStatus(jobId, 'sandboxing');
-
         const supabase = createServerClient();
 
         // Get fix_job record

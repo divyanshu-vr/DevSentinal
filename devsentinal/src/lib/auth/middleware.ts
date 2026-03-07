@@ -14,6 +14,7 @@ export type User = {
   email: string;
   name: string;
   avatar_url: string;
+  github_token: string | null;
 };
 
 export async function requireAuth(req: NextRequest): Promise<User | null> {
@@ -70,6 +71,7 @@ export async function requireAuth(req: NextRequest): Promise<User | null> {
       email: data.email,
       name: data.name,
       avatar_url: data.avatar_url || "",
+      github_token: data.github_token || null,
     };
   } catch (error) {
     console.error("Error in requireAuth:", error);

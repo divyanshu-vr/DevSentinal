@@ -113,7 +113,7 @@ export default function Home() {
 
       // Pipeline
       let i = 0;
-      for (let row of Array.from(rows)) {
+      for (const row of Array.from(rows)) {
         if (!loopActive) return;
         row.classList.add("visible", "running");
         const statusEl = row.querySelector(".row-status");

@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, SchemaType, type FunctionDeclaration } from '@google/generative-ai';
 import type { Requirement, Finding, RepoTreeNode } from '@/types';
 import {
   CODEBASE_UNDERSTANDING_PROMPT,
@@ -405,15 +405,15 @@ interface Sandbox {
 /**
  * Tool definitions for Gemini function calling
  */
-const AGENT_TOOLS = [
+const AGENT_TOOLS: FunctionDeclaration[] = [
   {
     name: 'read_file',
     description: 'Read a file from the repository by path',
     parameters: {
-      type: 'object',
+      type: SchemaType.OBJECT,
       properties: {
         path: {
-          type: 'string',
+          type: SchemaType.STRING,
           description: 'File path relative to repo root',
         },
       },
@@ -424,14 +424,14 @@ const AGENT_TOOLS = [
     name: 'write_file',
     description: 'Write content to a file (overwrites existing content)',
     parameters: {
-      type: 'object',
+      type: SchemaType.OBJECT,
       properties: {
         path: {
-          type: 'string',
+          type: SchemaType.STRING,
           description: 'File path relative to repo root',
         },
         content: {
-          type: 'string',
+          type: SchemaType.STRING,
           description: 'New file content',
         },
       },
@@ -442,10 +442,10 @@ const AGENT_TOOLS = [
     name: 'run_bash',
     description: 'Execute a bash command in the repository root',
     parameters: {
-      type: 'object',
+      type: SchemaType.OBJECT,
       properties: {
         command: {
-          type: 'string',
+          type: SchemaType.STRING,
           description: 'Bash command to execute',
         },
       },
@@ -456,14 +456,14 @@ const AGENT_TOOLS = [
     name: 'search_codebase',
     description: 'Search for patterns in the codebase using grep',
     parameters: {
-      type: 'object',
+      type: SchemaType.OBJECT,
       properties: {
         pattern: {
-          type: 'string',
+          type: SchemaType.STRING,
           description: 'Search pattern (regex)',
         },
         path: {
-          type: 'string',
+          type: SchemaType.STRING,
           description: 'Optional path to search in (defaults to entire repo)',
         },
       },
@@ -480,8 +480,6 @@ async function executeTool(
   toolInput: Record<string, unknown>,
   sandbox: Sandbox
 ): Promise<string> {
-  const startTime = Date.now();
-
   try {
     switch (toolName) {
       case 'read_file': {
@@ -530,7 +528,7 @@ export async function runAgentLoop(
   agent_log: AgentLogEntry[];
 }> {
   const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-pro',
+    model: 'gemini-3-flash',
     tools: [{ functionDeclarations: AGENT_TOOLS }],
   });
 
@@ -571,9 +569,9 @@ export async function runAgentLoop(
 
     // Execute all function calls
     const functionResponses = await Promise.all(
-      functionCalls.map(async (call: any) => {
+      functionCalls.map(async (call) => {
         const toolName = call.name;
-        const toolInput = call.args as Record<string, unknown>;
+        const toolInput = (call.args ?? {}) as Record<string, unknown>;
         const startTime = Date.now();
 
         const output = await executeTool(toolName, toolInput, sandbox);
