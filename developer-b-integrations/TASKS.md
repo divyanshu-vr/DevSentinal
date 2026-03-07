@@ -29,9 +29,9 @@ NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, E2B_API_KEY
 
 ### Goal: Create the fix_jobs table in Supabase
 
-- [ ] Create `supabase/migrations/007_create_fix_jobs.sql` — exact SQL from `shared/rules.md` Section 5
-- [ ] Run migration against Supabase project
-- [ ] Verify table exists with correct columns and RLS policy
+- [x] Create `supabase/migrations/007_create_fix_jobs.sql` — exact SQL from `shared/rules.md` Section 5
+- [x] Run migration against Supabase project
+- [x] Verify table exists with correct columns and RLS policy
 
 ---
 
@@ -39,7 +39,7 @@ NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, E2B_API_KEY
 
 ### Goal: Reusable GitHub API functions that A and C can call
 
-- [ ] Create `src/lib/github/client.ts`:
+- [x] Create `src/lib/github/client.ts`:
   ```typescript
   import { Octokit } from 'octokit';
 
@@ -48,7 +48,7 @@ NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, E2B_API_KEY
   }
   ```
 
-- [ ] Create `src/lib/github/repo.ts`:
+- [x] Create `src/lib/github/repo.ts`:
   - `fetchRepoTree(octokit, owner, repo, branch)` -> `RepoTreeNode[]`
     - Uses: `GET /repos/{owner}/{repo}/git/trees/{branch}?recursive=1`
     - Maps response to `RepoTreeNode[]` type
@@ -59,7 +59,7 @@ NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, E2B_API_KEY
     - Checks for: `package.json` (Node.js), `requirements.txt` (Python), `go.mod` (Go), `Cargo.toml` (Rust), `pom.xml` (Java), etc.
     - Returns array of detected technologies
 
-- [ ] Create `src/lib/github/pr.ts`:
+- [x] Create `src/lib/github/pr.ts`:
   - `createBranch(octokit, owner, repo, baseBranch, newBranch)` -> `void`
     - Gets base branch SHA via `GET /repos/{owner}/{repo}/git/ref/heads/{baseBranch}`
     - Creates new ref via `POST /repos/{owner}/{repo}/git/refs`
@@ -77,13 +77,13 @@ NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, E2B_API_KEY
 
 ### Goal: API routes that the frontend can call to preview repo data
 
-- [ ] Create `src/app/api/github/repo-tree/route.ts`:
+- [x] Create `src/app/api/github/repo-tree/route.ts`:
   - `GET` with query params `owner`, `repo`, `branch`
   - Gets user's GitHub token from session (via Person D's `requireAuth()`)
   - Calls `fetchRepoTree()`, returns `{ tree: RepoTreeNode[] }`
   - Validate query params, return 400 if missing
 
-- [ ] Create `src/app/api/github/file-content/route.ts`:
+- [x] Create `src/app/api/github/file-content/route.ts`:
   - `GET` with query params `owner`, `repo`, `path`, `branch`
   - Gets user's GitHub token from session
   - Calls `fetchFileContent()`, returns `{ content: string }`
@@ -94,7 +94,7 @@ NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, E2B_API_KEY
 
 ### Goal: Create, use, and destroy sandboxed VMs for code fixing
 
-- [ ] Create `src/lib/e2b/sandbox.ts`:
+- [x] Create `src/lib/e2b/sandbox.ts`:
   ```typescript
   import { Sandbox } from '@e2b/code-interpreter';
 
@@ -110,7 +110,7 @@ NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, E2B_API_KEY
   }
   ```
 
-- [ ] Create `src/lib/e2b/runner.ts`:
+- [x] Create `src/lib/e2b/runner.ts`:
   ```typescript
   export async function runInSandbox(sandbox: Sandbox, command: string): Promise<{ stdout: string; stderr: string; exitCode: number }>
   export async function runLint(sandbox: Sandbox, changedFiles: string[]): Promise<LintResult>
@@ -128,7 +128,7 @@ NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, E2B_API_KEY
 
 ### Goal: API route that Person D's UI calls when user clicks "Auto-Fix"
 
-- [ ] Create `src/app/api/projects/[id]/fix/[findingId]/route.ts`:
+- [x] Create `src/app/api/projects/[id]/fix/[findingId]/route.ts`:
   - `POST` handler:
     1. Authenticate user via `requireAuth()`
     2. Fetch the finding from DB, verify it belongs to user's project

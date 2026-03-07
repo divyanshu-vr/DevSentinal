@@ -36,14 +36,14 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
 
 ### Goal: All 6 tables created in Supabase with RLS policies
 
-- [ ] Create `supabase/migrations/001_create_users.sql` — exact SQL from `shared/rules.md` Section 5
-- [ ] Create `supabase/migrations/002_create_projects.sql`
-- [ ] Create `supabase/migrations/003_create_documents.sql`
-- [ ] Create `supabase/migrations/004_create_requirements.sql`
-- [ ] Create `supabase/migrations/005_create_analysis_runs.sql`
-- [ ] Create `supabase/migrations/006_create_findings.sql`
-- [ ] Run migrations against Supabase project
-- [ ] Verify all tables exist with correct columns and RLS policies
+- [x] Create `supabase/migrations/001_create_users.sql` — exact SQL from `shared/rules.md` Section 5
+- [x] Create `supabase/migrations/002_create_projects.sql`
+- [x] Create `supabase/migrations/003_create_documents.sql`
+- [x] Create `supabase/migrations/004_create_requirements.sql`
+- [x] Create `supabase/migrations/005_create_analysis_runs.sql`
+- [x] Create `supabase/migrations/006_create_findings.sql`
+- [x] Run migrations against Supabase project
+- [x] Verify all tables exist with correct columns and RLS policies
 
 ---
 
@@ -51,8 +51,8 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
 
 ### Goal: TypeScript types and database client ready for all devs
 
-- [ ] Create `src/types/index.ts` — copy exact types from `shared/rules.md` Section 6
-- [ ] Create `src/lib/supabase/client.ts`:
+- [x] Create `src/types/index.ts` — copy exact types from `shared/rules.md` Section 6
+- [x] Create `src/lib/supabase/client.ts`:
   ```typescript
   import { createBrowserClient as _createBrowserClient } from '@supabase/ssr';
   // OR simpler approach:
@@ -65,7 +65,7 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
     );
   }
   ```
-- [ ] Create `src/lib/supabase/server.ts`:
+- [x] Create `src/lib/supabase/server.ts`:
   ```typescript
   import { createClient } from '@supabase/supabase-js';
 
@@ -83,22 +83,22 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
 
 ### Goal: Parse uploaded PDF, DOCX, and MD files into plain text
 
-- [ ] Create `src/lib/parsers/pdf.ts`:
+- [x] Create `src/lib/parsers/pdf.ts`:
   ```typescript
-  import pdfParse from 'pdf-parse';
+  import { PDFParse } from 'pdf-parse';
   export async function parsePDF(buffer: Buffer): Promise<string>
   ```
-- [ ] Create `src/lib/parsers/docx.ts`:
+- [x] Create `src/lib/parsers/docx.ts`:
   ```typescript
   import mammoth from 'mammoth';
   export async function parseDOCX(buffer: Buffer): Promise<string>
   ```
-- [ ] Create `src/lib/parsers/markdown.ts`:
+- [x] Create `src/lib/parsers/markdown.ts`:
   ```typescript
   import { marked } from 'marked';
   export async function parseMarkdown(text: string): Promise<string>
   ```
-- [ ] Each parser returns clean plain text (no HTML tags, no binary artifacts)
+- [x] Each parser returns clean plain text (no HTML tags, no binary artifacts)
 
 ---
 
@@ -106,14 +106,14 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
 
 ### Goal: Accept PRD file upload, parse it, extract requirements via Gemini
 
-- [ ] Create `src/app/api/upload/route.ts`:
-  - `POST` handler accepts `FormData` with fields `file` (File) and `project_id` (string)
-  - Detect file type from extension (.pdf, .md, .docx)
-  - Parse file content using the appropriate parser from Task 3
-  - Store document record in `documents` table with `parsed_content`
-  - Call Gemini to extract structured requirements from parsed text (see Task 5 prompt)
-  - Store each extracted requirement in `requirements` table
-  - Return `UploadResponse` shape: `{ document, requirements }`
+- [x] Create `src/app/api/upload/route.ts`:
+  - [x] `POST` handler accepts `FormData` with fields `file` (File) and `project_id` (string)
+  - [x] Detect file type from extension (.pdf, .md, .docx)
+  - [x] Parse file content using the appropriate parser from Task 3
+  - [x] Store document record in `documents` table with `parsed_content`
+  - [x] Call Gemini to extract structured requirements from parsed text (see Task 5 prompt)
+  - [x] Store each extracted requirement in `requirements` table
+  - [x] Return `UploadResponse` shape: `{ document, requirements }`
 
 ---
 
@@ -121,7 +121,7 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
 
 ### Goal: Gemini parses PRD text and returns structured requirements
 
-- [ ] Create `src/lib/ai/gemini.ts`:
+- [x] Create `src/lib/ai/gemini.ts`:
   ```typescript
   import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -130,13 +130,13 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
   export async function extractRequirements(prdText: string): Promise<ExtractedRequirement[]>
   export async function analyzeCodebase(fileTree: RepoTreeNode[], fileContents: Record<string, string>, requirements: Requirement[]): Promise<Finding[]>
   ```
-- [ ] Create `src/lib/ai/prompts/analyze-codebase.ts`:
+- [x] Create `src/lib/ai/prompts/analyze-codebase.ts`:
   - System prompt for Gemini Pass 1: "You are a senior engineer. Given this file tree and key source files, identify the framework, all API routes, frontend pages, auth middleware, and database models. Return a JSON structure."
   - System prompt for Gemini Pass 2: "Given the codebase analysis and these PRD requirements, for each requirement determine if the code satisfies it. Return a JSON array of findings with pass/fail, file_path, line numbers, code snippet, and explanation."
-- [ ] Create `src/lib/ai/prompts/generate-tests.ts`:
+- [x] Create `src/lib/ai/prompts/generate-tests.ts`:
   - Prompt that takes requirements and generates test cases with types: happy_path, error_case, auth_guard, validation, edge_case
-- [ ] Use Gemini's JSON mode (`generationConfig: { responseMimeType: "application/json" }`) for structured output
-- [ ] Handle large repos: prioritize files matching routes found in PRD requirements (max ~50 key files)
+- [x] Use Gemini's JSON mode (`generationConfig: { responseMimeType: "application/json" }`) for structured output
+- [x] Handle large repos: prioritize files matching routes found in PRD requirements (max ~50 key files)
 
 ---
 
@@ -144,12 +144,12 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
 
 ### Goal: Async analysis pipeline triggered by API, streams progress via DB status updates
 
-- [ ] Create `src/lib/inngest/client.ts`:
+- [x] Create `src/lib/inngest/client.ts`:
   ```typescript
   import { Inngest } from 'inngest';
   export const inngest = new Inngest({ id: 'devsentinel' });
   ```
-- [ ] Create `src/lib/inngest/analyze.ts`:
+- [x] Create `src/lib/inngest/analyze.ts`:
   Inngest function `analysis.run`, triggered by event `analysis.trigger`:
   - **Step 1 — Parse PRD** (status: `parsing_prd`):
     - Read document + requirements from DB
@@ -172,9 +172,9 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
     - Update `projects.health_score` and `projects.status` to `analyzed`
     - Update status to `complete`
   - **Error handling**: Any step failure -> status = `error`, store error_message
-- [ ] Create `src/app/api/projects/[id]/analyze/route.ts`:
+- [x] Create `src/app/api/projects/[id]/analyze/route.ts`:
   - `POST`: Create `analysis_runs` row, trigger Inngest event `analysis.trigger`, return `TriggerAnalysisResponse`
-- [ ] Create `src/app/api/inngest/route.ts`:
+- [x] Create `src/app/api/inngest/route.ts`:
   - Inngest serve endpoint that registers both `analysis.run` and Person C's `fix.run`
 
 ### Key Design Decisions:
@@ -189,10 +189,10 @@ NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_K
 
 ### Goal: CRUD routes for projects and findings
 
-- [ ] Create `src/app/api/projects/route.ts`:
+- [x] Create `src/app/api/projects/route.ts`:
   - `GET`: List all projects for authenticated user. Return `ListProjectsResponse`.
   - `POST`: Accept `CreateProjectRequest`, parse repo URL to extract owner/name, call Person B's `fetchRepoTree()` and `detectTechStack()`, create project in DB, return `CreateProjectResponse`.
-- [ ] Create `src/app/api/projects/[id]/findings/route.ts`:
+- [x] Create `src/app/api/projects/[id]/findings/route.ts`:
   - `GET`: Accept query param `?run_id=uuid` (or `latest`). Fetch analysis run + all findings. Return `FindingsResponse`.
 
 ---

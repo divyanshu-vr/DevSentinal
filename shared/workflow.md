@@ -16,10 +16,10 @@
 | 1.2 | Create `requireAuth()` middleware + Auth0 config | D | 1.1 | `[ ]` |
 | 1.3 | Auth0 login/callback/logout pages working | D | 1.2 | `[ ]` |
 | 1.4 | Deploy blank app to Vercel | D | 1.1 | `[ ]` |
-| 1.5 | Create `src/types/index.ts` (all shared types) | A | 1.1 | `[ ]` |
-| 1.6 | Create Supabase client (`server.ts` + `client.ts`) | A | 1.1 | `[ ]` |
-| 1.7 | Run DB migrations (tables 1-6) in Supabase | A | Nothing (can use Supabase dashboard) | `[ ]` |
-| 1.8 | Run DB migration (table 7: fix_jobs) in Supabase | B | Nothing (can use Supabase dashboard) | `[ ]` |
+| 1.5 | Create `src/types/index.ts` (all shared types) | A | 1.1 | `[x]` A — all shared types from rules.md Section 6 |
+| 1.6 | Create Supabase client (`server.ts` + `client.ts`) | A | 1.1 | `[x]` A — browser + server clients created |
+| 1.7 | Run DB migrations (tables 1-6) in Supabase | A | Nothing (can use Supabase dashboard) | `[x]` A — migrations run + verified |
+| 1.8 | Run DB migration (table 7: fix_jobs) in Supabase | B | Nothing (can use Supabase dashboard) | `[x]` B — migration run + verified |
 
 **Block 1 Gate:** Everyone pulls from `main` after D pushes scaffold (1.1). A's types (1.5) and Supabase client (1.6) must be merged before Block 2 starts.
 
@@ -33,14 +33,14 @@ Two pairs work simultaneously. Within each pair, work is loosely coupled.
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|-----------|--------|
-| 2A.1 | PRD parsers (pdf.ts, docx.ts, markdown.ts) | A | 1.5, 1.6 | `[ ]` |
-| 2A.2 | Upload API route (`POST /api/upload`) | A | 2A.1 | `[ ]` |
-| 2A.3 | Gemini prompts (analyze-codebase.ts, generate-tests.ts) | A | 1.5 | `[ ]` |
-| 2A.4 | Gemini client (`gemini.ts`) with extraction + analysis functions | A | 2A.3 | `[ ]` |
-| 2A.5 | Inngest client (`client.ts`) | A | 1.1 | `[ ]` |
-| 2A.6 | Inngest analysis job (`analyze.ts`) — full pipeline | A | 2A.4, 2A.5, 2B.1* | `[ ]` |
-| 2A.7 | Project API routes (`GET/POST /api/projects`, `GET /findings`) | A | 1.5, 1.6 | `[ ]` |
-| 2A.8 | Inngest serve endpoint (`/api/inngest/route.ts`) | A | 2A.5 | `[ ]` |
+| 2A.1 | PRD parsers (pdf.ts, docx.ts, markdown.ts) | A | 1.5, 1.6 | `[x]` A — pdf (pdf-parse v2), docx (mammoth), markdown (marked) done |
+| 2A.2 | Upload API route (`POST /api/upload`) | A | 2A.1 | `[x]` A — POST handler with parsing, Gemini extraction, DB storage |
+| 2A.3 | Gemini prompts (analyze-codebase.ts, generate-tests.ts) | A | 1.5 | `[x]` A — Pass 1 (codebase understanding) + Pass 2 (requirement analysis) + test generation prompts done |
+| 2A.4 | Gemini client (`gemini.ts`) with extraction + analysis functions | A | 2A.3 | `[x]` A — extractRequirements, understandCodebase, generateTestCases, analyzeCodebase + prioritizeFiles (max 50 key files) done |
+| 2A.5 | Inngest client (`client.ts`) | A | 1.1 | `[x]` A — inngest client with id 'devsentinel' done |
+| 2A.6 | Inngest analysis job (`analyze.ts`) — full pipeline | A | 2A.4, 2A.5, 2B.1* | `[x]` A — 5-step pipeline (parse PRD, understand codebase, generate tests, run tests, complete) with error handling done |
+| 2A.7 | Project API routes (`GET/POST /api/projects`, `GET /findings`) | A | 1.5, 1.6 | `[x]` A — GET/POST /api/projects + GET /api/projects/[id]/findings done |
+| 2A.8 | Inngest serve endpoint (`/api/inngest/route.ts`) | A | 2A.5 | `[x]` A — serve endpoint registering analysis.run (fix.run placeholder for Person C) done |
 | 2C.1 | Claude client + 4 tool definitions (`claude.ts`) | C | 1.1 | `[ ]` |
 | 2C.2 | Fix agent prompt (`fix-code.ts`) | C | 1.5 | `[ ]` |
 | 2C.3 | SSE emitter helper (`emitter.ts`) | C | 1.1 | `[ ]` |
@@ -54,11 +54,11 @@ Two pairs work simultaneously. Within each pair, work is loosely coupled.
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|-----------|--------|
-| 2B.1 | GitHub client + repo.ts (fetchRepoTree, fetchFileContent, detectTechStack) | B | 1.1 | `[ ]` |
-| 2B.2 | GitHub API routes (repo-tree, file-content) | B | 2B.1, 1.2 | `[ ]` |
-| 2B.3 | E2B sandbox library (sandbox.ts, runner.ts) | B | 1.1 | `[ ]` |
-| 2B.4 | GitHub PR library (pr.ts — createBranch, commitFiles, openPR) | B | 2B.1 | `[ ]` |
-| 2B.5 | Fix trigger API route (`POST /api/projects/[id]/fix/[findingId]`) | B | 1.6, 2B.3 | `[ ]` |
+| 2B.1 | GitHub client + repo.ts (fetchRepoTree, fetchFileContent, detectTechStack) | B | 1.1 | `[x]` B — client.ts + repo.ts with all 3 functions done |
+| 2B.2 | GitHub API routes (repo-tree, file-content) | B | 2B.1, 1.2 | `[x]` B — repo-tree + file-content API routes done |
+| 2B.3 | E2B sandbox library (sandbox.ts, runner.ts) | B | 1.1 | `[x]` B — sandbox.ts (createSandbox, destroySandbox) + runner.ts (runInSandbox, runLint, runTests, readFile, writeFile) done |
+| 2B.4 | GitHub PR library (pr.ts — createBranch, commitFiles, openPR) | B | 2B.1 | `[x]` B — pr.ts with createBranch, commitFiles, openPR done |
+| 2B.5 | Fix trigger API route (`POST /api/projects/[id]/fix/[findingId]`) | B | 1.6, 2B.3 | `[x]` B — POST handler with auth, finding verification, fix_jobs creation, Inngest event (stubbed), TriggerFixResponse done |
 | 2D.1 | Landing page (`/`) | D | 1.1 | `[ ]` |
 | 2D.2 | Layout + header + sidebar components | D | 1.1 | `[ ]` |
 | 2D.3 | Dashboard page (`/dashboard`) + project-card component | D | 1.2 | `[ ]` |
