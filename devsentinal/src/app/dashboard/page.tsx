@@ -67,8 +67,9 @@ export default function DashboardPage() {
         : null;
 
     return (
+        // ✅ FIX: cursor-auto ensures cursor is always visible throughout the page
         <AppLayout>
-            <div className="p-8 max-w-7xl mx-auto">
+            <div className="p-8 max-w-7xl mx-auto cursor-auto">
                 {/* Header row */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
                     <div>
@@ -81,9 +82,10 @@ export default function DashboardPage() {
                                 : `${projects.length} project${projects.length !== 1 ? "s" : ""}`}
                         </p>
                     </div>
+                    {/* ✅ FIX: cursor-pointer added on Link */}
                     <Link
                         href="/project/new"
-                        className="bg-accent text-white font-body font-bold text-xs uppercase tracking-widest px-6 py-3 rounded-lg hover:bg-accent2 transition-all duration-200 shadow-lg shadow-accent/20 text-center"
+                        className="bg-accent text-white font-body font-bold text-xs uppercase tracking-widest px-6 py-3 rounded-lg hover:bg-accent2 transition-all duration-200 shadow-lg shadow-accent/20 text-center cursor-pointer"
                     >
                         + New Project
                     </Link>
@@ -113,9 +115,10 @@ export default function DashboardPage() {
                 {error && !loading && (
                     <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 text-center">
                         <div className="font-mono text-sm text-red-400 mb-2">{error}</div>
+                        {/* ✅ FIX: cursor-pointer added on button */}
                         <button
                             onClick={() => window.location.reload()}
-                            className="font-mono text-[10px] text-mm-muted hover:text-mm-text uppercase tracking-[0.2em] font-bold"
+                            className="font-mono text-[10px] text-mm-muted hover:text-mm-text uppercase tracking-[0.2em] font-bold cursor-pointer"
                         >
                             Retry
                         </button>
@@ -132,9 +135,10 @@ export default function DashboardPage() {
                         <div className="font-mono text-[10px] text-mm-subtle uppercase tracking-wider mb-6">
                             Create your first project to get started
                         </div>
+                        {/* ✅ FIX: cursor-pointer added on Link */}
                         <Link
                             href="/project/new"
-                            className="inline-block bg-accent text-white font-body font-bold text-xs uppercase tracking-widest px-6 py-3 rounded-lg hover:bg-accent2 transition-all duration-200 shadow-lg shadow-accent/20"
+                            className="inline-block bg-accent text-white font-body font-bold text-xs uppercase tracking-widest px-6 py-3 rounded-lg hover:bg-accent2 transition-all duration-200 shadow-lg shadow-accent/20 cursor-pointer"
                         >
                             + New Project
                         </Link>
