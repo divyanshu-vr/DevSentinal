@@ -180,7 +180,7 @@ export default function Home() {
         <div className="bg-mesh"></div>
         <div className="hero-container">
           <div className="hero-content">
-            <div className="hero-eyebrow">v1.0 · Inspired by Stripe Minions</div>
+            <div className="hero-eyebrow">v1.0 · Inspired by Minions</div>
             <h1 className="hero-title">
               Fix GitHub issues.<br />
               While you <span className="glow-underline">sleep</span>.
@@ -568,7 +568,7 @@ export default function Home() {
               Documentation
             </a>
             <a href="#" className="clickable">
-              Inspired by Stripe Minions
+              Inspired by  Minions
             </a>
           </div>
         </div>
