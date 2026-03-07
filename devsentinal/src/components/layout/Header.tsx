@@ -29,7 +29,7 @@ const Header: React.FC<HeaderProps> = ({ projectName }) => {
             {/* Left: Logo */}
             <Link href="/" className="flex items-center gap-2 group">
                 <span className="font-display font-extrabold text-mm-text text-xl tracking-tight">
-                    ⚡ Mini<span className="text-accent group-hover:text-accent2 transition-colors">Minions</span>
+                    ⚡ Dev<span className="text-accent group-hover:text-accent2 transition-colors">Sentinal</span>
                 </span>
             </Link>
 
