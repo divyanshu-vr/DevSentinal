@@ -36,7 +36,7 @@ devSentinal/
 │   └── TASKS.md                   # Analysis engine, Gemini, DB, Inngest
 │
 ├── developer-b-integrations/      # Person B — API Integrations
-│   └── TASKS.md                   # GitHub API, E2B sandbox, PR creation
+│   └── TASKS.md                   # GitHub API, Vultr sandbox, PR creation
 │
 ├── developer-c-ai-agent/          # Person C — AI/Agent
 │   └── TASKS.md                   # Claude agent loop, SSE streaming
