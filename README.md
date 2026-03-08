@@ -61,7 +61,7 @@ devSentinal/
 | Person | Role | Scope |
 |--------|------|-------|
 | A | Backend Lead | Analysis engine, Gemini prompts, DB, Inngest |
-| B | API Integrations | GitHub API, E2B sandbox, PR creation |
+| B | API Integrations | GitHub API, Vultr sandbox, PR creation |
 | C | AI/Agent | Claude agent loop, SSE streaming, fix orchestration |
 | D | Frontend Lead | Next.js UI, Auth0, all pages and components |
 
