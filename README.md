@@ -20,7 +20,7 @@ Connect your GitHub repo + upload your PRD. DevSentinel generates test cases fro
 | Database | Supabase (Postgres + RLS) |
 | Audit AI | Google Gemini Flash |
 | Fix AI | Claude Sonnet (Anthropic) |
-| Sandbox | E2B |
+| Sandbox | Vultr |
 | Job Queue | Inngest |
 | UI | shadcn/ui + Tailwind CSS |
 
